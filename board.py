@@ -9,6 +9,7 @@ class Board:
         # status - 50-move, en-passant, color to move, castling rights
         self.status = uint16(0)
         side_to_move = 1
+        castle = [[3,3]]*67
 
     # Moves will be integers, with the rightmost bits storing to, from, 
     # piece, captured, and any other flags
@@ -20,11 +21,12 @@ class Board:
     def get_piece(self, a):
         a >> 12 & 7
     def get_captured(self, a):
-        a >> 15 & 7
+        a >> 15 & 
     def flip(self, a):
         x^1
 
-    def makeMove(self, move):
+    # makeMove does not validate moves (e.g castling without rights)
+    def makeMove(self, move, ply):
         piece = get_piece(move)
         p_to = get_to(move)
         p_from = get_from(move)
@@ -35,14 +37,27 @@ class Board:
         self.piece_BB[piece] ^= from_to_BB
         self.piece_BB[side_to_move] ^= from_to_BB 
         if piece = KING:
-            # Put king logic here (castling, etc.)
+            if castle[ply][side_to_move] > 0:
+                if (abs(p_to - p_from) == 2:
+                    if p_to == rooks[6][side_to_move]:
+                        p_from = rooks[7][side_to_move]
+                        p_to = rooks[5][side_to_move]
+                    else:
+                        p_from = rooks[0][side_to_move]:
+                        p_to = rooks[3][side_to_move]
+                    rook_bitmap = uint64(1) << p_from | uint64(1) << p_to
+                    self.piece_BB[ROOK] ^= rook_bitmap
+                    self.piece_BB[side_to_move] ^= rook_bitmap
             pass
-        if piece = PAWN:
+        elif piece = PAWN:
             # Put pawn logic here (em passant)
             pass
-        if piece = ROOK:
-            # Put rook logic here (castling)
-            pass
+        elif piece = ROOK:
+            if castle[ply][side_to_move] > 0:
+                if p_from == rooks[7][side_to_move]:
+                    castle[ply][side_to_move] &= 1
+                elif p_from == rooks[0][side_to_move]:
+                    castle[ply][side_to_move] &= 2
         if captured:
             self.piece_BB[captured] ^= to_BB                  
             self.piece_BB[flip(side_to_move)] ^= to_BB
