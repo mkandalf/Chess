@@ -1,11 +1,17 @@
 from numpy import uint64, uint16
-from constants import *
 
-class Board:
+PIECE_INIT = [0xFFFF, 0xFFFF000000000000, 0xFF00, 0x42, 0x24, 0x81, 0x8,
+                0x10, 0xFF000000000000, 0x4200000000000000,
+                0x2400000000000000, 0x8100000000000000, 0x800000000000000,
+                0x1000000000000000]
+OCCUPIED_INIT = 0xffff000000000000ffff
+EMPTY_INIT = 0xffffffffffffff0000
+
+class Board(object):
     def __init__(self):
-        self.piece_BB = piece_init
-        self.occupied_BB = occupied_init
-        self.empty_BB = empty_init 
+        self.piece_BB = PIECE_INIT
+        self.occupied_BB = OCCUPIED_INIT
+        self.empty_BB = EMPTY_INIT
         # status - 50-move, en-passant, color to move, castling rights
         self.status = uint16(0)
         side_to_move = 1
@@ -16,17 +22,21 @@ class Board:
     # Eventually move these functions out of this file
     def get_from(self, a):
         a & 63
+
     def get_to(self, a):
         a >> 6 & 63
+
     def get_piece(self, a):
         a >> 12 & 7
+
     def get_captured(self, a):
         a >> 15 & 
+
     def flip(self, a):
         x^1
 
     # makeMove does not validate moves (e.g castling without rights)
-    def makeMove(self, move, ply):
+    def make_move(self, move, ply):
         piece = get_piece(move)
         p_to = get_to(move)
         p_from = get_from(move)
@@ -36,7 +46,7 @@ class Board:
         from_to_BB = from_BB ^ to_BB
         self.piece_BB[piece] ^= from_to_BB
         self.piece_BB[side_to_move] ^= from_to_BB 
-        if piece = KING:
+        if piece == KING:
             if castle[ply][side_to_move] > 0:
                 if (abs(p_to - p_from) == 2:
                     if p_to == rooks[6][side_to_move]:
@@ -49,10 +59,10 @@ class Board:
                     self.piece_BB[ROOK] ^= rook_bitmap
                     self.piece_BB[side_to_move] ^= rook_bitmap
             pass
-        elif piece = PAWN:
+        elif piece == PAWN:
             # Put pawn logic here (em passant)
             pass
-        elif piece = ROOK:
+        elif piece == ROOK:
             if castle[ply][side_to_move] > 0:
                 if p_from == rooks[7][side_to_move]:
                     castle[ply][side_to_move] &= 1
