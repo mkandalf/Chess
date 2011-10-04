@@ -6,9 +6,20 @@ PIECE_INIT = [0xFFFF, 0xFFFF000000000000, 0xFF00, 0x42, 0x24, 0x81, 0x8,
                 0x1000000000000000]
 OCCUPIED_INIT = 0xffff000000000000ffff
 EMPTY_INIT = 0xffffffffffffff0000
+EMPTY = 0
+PAWN = 1
+KNIGHT = 2
+BISHOP = 3
+ROOK = 4
+QUEEN = 5
+KING = 6
+rooks = [[0, 56], [1, 57], [2, 58], [3, 59], [4, 60],
+         [5, 61], [6, 62], [7, 63]]
 
 class Board(object):
     def __init__(self):
+        # It will probably provide a speed up to eventually track
+        # # of majors, minors, material count, etc, here.
         self.piece_BB = PIECE_INIT
         self.occupied_BB = OCCUPIED_INIT
         self.empty_BB = EMPTY_INIT
@@ -32,6 +43,9 @@ class Board(object):
     def get_captured(self, a):
         a >> 15 & 7
 
+    def get_promoted(self, a):
+        a >> 18 & 7
+
     def flip(self, a):
         a^1
 
@@ -41,6 +55,7 @@ class Board(object):
         p_to = self.get_to(move)
         p_from = self.get_from(move)
         captured = self.get_captured(move)
+        promoted = self.get_promoted(move)
         from_BB = uint64(1) << p_from 
         to_BB = uint64(1) << p_to 
         from_to_BB = from_BB ^ to_BB
@@ -60,8 +75,10 @@ class Board(object):
                     self.piece_BB[side_to_move] ^= rook_bitmap
             pass
         elif piece == PAWN:
-            # Put pawn logic here (em passant)
-            pass
+            # Add en passant
+            if (promoted):
+                self.piece_BB[piece] ^= to_BB 
+                self.piece_BB[promoted] ^= to_BB
         elif piece == ROOK:
             if self.castle[ply][side_to_move] > 0:
                 if p_from == rooks[7][side_to_move]:
