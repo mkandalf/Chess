@@ -1,4 +1,4 @@
-from numpy import uint64, left_shift, right_shift
+from numpy import uint64
 
 all_king_attacks = [uint64(0)]*64
 not_a_file = uint64(0xfefefefefefefefe)

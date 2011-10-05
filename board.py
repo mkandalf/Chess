@@ -1,18 +1,15 @@
 from numpy import uint64, uint16
 
-PIECE_INIT = [0xFFFF, 0xFFFF000000000000, 0xFF00, 0x42, 0x24, 0x81, 0x8,
-                0x10, 0xFF000000000000, 0x4200000000000000,
-                0x2400000000000000, 0x8100000000000000, 0x800000000000000,
-                0x1000000000000000]
+PIECE_INIT = [0xFFFF, 0xFFFF000000000000,0x0000ffffffff0000,0x00ff00000000ff00, 0x4200000000000024, 0x2400000000000042, 0x8100000000000018, 0x1000000000000010, 0x0800000000000008]
 OCCUPIED_INIT = 0xffff000000000000ffff
 EMPTY_INIT = 0xffffffffffffff0000
-EMPTY = 0
-PAWN = 1
-KNIGHT = 2
-BISHOP = 3
-ROOK = 4
-QUEEN = 5
-KING = 6
+EMPTY = 2
+PAWN = 3
+KNIGHT = 4
+BISHOP = 5
+ROOK = 6
+QUEEN = 7
+KING = 8
 rooks = [[0, 56], [1, 57], [2, 58], [3, 59], [4, 60],
          [5, 61], [6, 62], [7, 63]]
 
@@ -25,8 +22,9 @@ class Board(object):
         self.empty_BB = EMPTY_INIT
         # status - 50-move, en-passant, color to move, castling rights
         self.status = uint16(0)
-        self.to_move = 1
+        self.to_move = 0
         self.castle = [[3,3]]*67
+        self.king_square = [4, 60]
 
     # Moves will be integers, with the rightmost bits storing to, from, 
     # piece, captured, and any other flags
@@ -51,7 +49,7 @@ class Board(object):
 
     # makeMove does not validate moves (e.g castling without rights)
     def make_move(self, move, ply, side_to_move):
-        piece = self.get_piece(move)
+        piece = self.get_piece(move) + 2
         p_to = self.get_to(move)
         p_from = self.get_from(move)
         captured = self.get_captured(move)
@@ -62,6 +60,7 @@ class Board(object):
         self.piece_BB[piece] ^= from_to_BB
         self.piece_BB[side_to_move] ^= from_to_BB 
         if piece == KING:
+            self.king_square[side_to_move] = p_to
             if self.castle[ply][side_to_move] > 0:
                 if (abs(p_to - p_from)) == 2:
                     if p_to == rooks[6][side_to_move]:
@@ -77,6 +76,7 @@ class Board(object):
         elif piece == PAWN:
             # Add en passant
             if (promoted):
+                promoted += 2
                 self.piece_BB[piece] ^= to_BB 
                 self.piece_BB[promoted] ^= to_BB
         elif piece == ROOK:
@@ -86,6 +86,7 @@ class Board(object):
                 elif p_from == rooks[0][side_to_move]:
                     self.castle[ply][side_to_move] &= 2
         if captured:
+            captured += 2
             self.piece_BB[captured] ^= to_BB                  
             self.piece_BB[self.flip(side_to_move)] ^= to_BB
             self.occupied_BB ^= from_BB 
