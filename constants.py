@@ -1,4 +1,5 @@
 from numpy import uint64
+from util import north_one, south_one, east_one, west_one
 
 all_knight_attacks = [uint64(0)]*64
 all_king_attacks = [uint64(0)]*64
@@ -38,26 +39,26 @@ def init_king_attacks():
         all_king_attacks[sq] = king_attacks(sq_BB)
         sq_BB <<= uint64(1)
 
-def east_one(a):
-    return (a << uint64(1)) & not_a_file
 
-def west_one(a):
-    return (a >> uint64(1)) & not_h_file
 
-def north_one(a):
-    return (a << uint64(8))
 
-def south_one(a): 
-    return (a >> uint64(8)) 
 
-def no_ea_one(a):
-    return (a << uint64(9)) & not_a_file
 
-def so_ea_one(a):
-    return (a >> uint64(7)) & not_a_file
 
-def no_we_one(a):
-    return (a << uint64(7)) & not_h_file
 
-def so_we_one(a):
-    return (a >> uint64(9)) & not_h_file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
