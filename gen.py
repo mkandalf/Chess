@@ -1,6 +1,6 @@
 import constants
 import util
-from board import KNIGHT, PAWN
+from board import KNIGHT, PAWN, KING
 from numpy import uint64
 
 def gen_moves(board):
@@ -15,10 +15,17 @@ def gen_move(p_to, p_from, piece, capture, promote):
           | ((p_to & 63) << 6) | (p_from & 63))
 
 def gen_king_moves(board):
-    # Needs to be a list of moves
-    king_index = board.king_square[board.to_move] 
-    return constants.all_king_attacks[king_index] \
-            & ~board.piece_BB[board.to_move] 
+  # Needs to be a list of moves
+  move_list = []
+  king_index = board.king_square[board.to_move] 
+  to = constants.all_king_attacks[king_index] \
+       & ~board.piece_BB[board.to_move]
+  while (to):
+    move_list.append(
+      gen_move(util.bit_scan_forward(to), board.king_square[board.to_move],
+                KING, 0, 0))
+    to = util.clear_least_bit(to)
+  return move_list
 
 def gen_pawn_moves(board):
   move_list = []
@@ -26,7 +33,6 @@ def gen_pawn_moves(board):
   to = (util.south_one(froms) if board.to_move else util.north_one(froms)) \
         & board.empty_BB
   while (to):
-    print to
     move_list.append(
       gen_move(util.bit_scan_forward(to), 
                util.bit_scan_forward(
