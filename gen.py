@@ -30,15 +30,58 @@ def gen_king_moves(board):
 def gen_pawn_moves(board):
   move_list = []
   froms = board.piece_BB[PAWN] & board.piece_BB[board.to_move]
-  to = (util.south_one(froms) if board.to_move else util.north_one(froms)) \
-        & board.empty_BB
-  while (to):
+  pawn_advance_1 = (util.south_one(froms) if board.to_move else util.north_one(froms)) & board.empty_BB
+  pawn_advance_2 = ( util.south_one(pawn_advance_1) if board.to_move 
+      else util.north_one(pawn_advance_1) ) \
+      & board.empty_BB \
+      & constants.pawn_advance_2_mask[board.to_move] 
+  # Single pushes:
+  to = pawn_advance_1
+  while (to):                                                            
     move_list.append(
       gen_move(util.bit_scan_forward(to), 
                util.bit_scan_forward(
                  to << uint64(8) if board.to_move else to >> uint64(8)),
                 PAWN, 0, 0)) 
     to = util.clear_least_bit(to)
+  # Double pushes:
+  to = pawn_advance_2
+  print to
+  while (to):                                                             
+    move_list.append(                                                     
+      gen_move(util.bit_scan_forward(to),                                 
+               util.bit_scan_forward(
+                 to << uint64(16) if board.to_move else to >> uint64(16)),
+                PAWN, 0, 0)) 
+    to = util.clear_least_bit(to) 
+  return move_list
+
+def gen_pawn_captures(board):
+  # Replace the 1 in the move generation with the actual capture piece
+  move_list = []
+  froms = board.piece_BB[PAWN] & board.piece_BB[board.to_move]
+  pawn_attacks_e = (util.so_ea_one(froms) if board.to_move 
+                  else util.no_ea_one(froms)) \
+                  & board.piece_BB[util.flip(board.to_move)]
+  pawn_attacks_w =(util.so_we_one(froms) if board.to_move
+                  else util.no_we_one(froms)) \
+                  & board.piece_BB[util.flip(board.to_move)]
+  to = pawn_attacks_e
+  while (to):
+    move_list.append(
+      gen_move(util.bit_scan_forward(to),
+                util.bit_scan_forward(
+                  to << uint64(7) if board.to_move else to >> uint64(9)),
+                PAWN, 1, 0))
+    to = util.cleasr_least_bit(to)
+  to = pawn_attacks_w
+  while (to):
+    move_list.append(
+      gen_move(util.bit_scan_forward(to),
+                util.bit_scan_forward(
+                  to << uint64(9) if board.to_move else to >> uint64(7)),
+                PAWN, 1, 0))
+    to = util.cleasr_least_bit(to)                                       
   return move_list
 
 def gen_knight_moves(board):

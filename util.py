@@ -42,3 +42,6 @@ def no_we_one(a):
 
 def so_we_one(a):
     return (a >> uint64(9)) & not_h_file
+
+def flip(a):
+  return a ^ 1
