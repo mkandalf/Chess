@@ -25,7 +25,10 @@ class Board(object):
         self.to_move = 0
         self.castle = [[3,3]]*67
         self.king_square = [4, 60]
-
+        self.piece_square = [6, 4, 5, 7, 8, 5, 4, 6, 3, 3, 3, 3, 3, 3, 3, 3,
+              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 6, 4,
+              5, 7, 8, 5, 4, 6]
     # Moves will be integers, with the rightmost bits storing to, from, 
     # piece, captured, and any other flags
     # Eventually move these functions out of this file
@@ -59,6 +62,8 @@ class Board(object):
         from_to_BB = from_BB ^ to_BB
         self.piece_BB[piece] ^= from_to_BB
         self.piece_BB[side_to_move] ^= from_to_BB 
+        self.piece_square[p_from] = EMPTY
+        self.piece_square[p_to] = piece
         if piece == KING:
             self.king_square[side_to_move] = p_to
             if self.castle[ply][side_to_move] > 0:
@@ -72,6 +77,8 @@ class Board(object):
                     rook_bitmap = uint64(1) << p_from | uint64(1) << p_to
                     self.piece_BB[ROOK] ^= rook_bitmap
                     self.piece_BB[side_to_move] ^= rook_bitmap
+                    self.piece_square[p_from] = EMPTY
+                    self.piece_square[p_to] = ROOK
             pass
         elif piece == PAWN:
             # Add en passant
