@@ -1,5 +1,5 @@
-from numpy import uint64
-from util import north_one, south_one, east_one, west_one
+from numpy import uint64, binary_repr
+from util import north_one, south_one, east_one, west_one, print_bb
 
 all_knight_attacks = [uint64(0)]*64
 all_king_attacks = [uint64(0)]*64
@@ -7,14 +7,68 @@ not_a_file = uint64(0xfefefefefefefefe)
 not_h_file = uint64(0x7f7f7f7f7f7f7f7f)
 pawn_advance_2_mask = [uint64(0xff000000), uint64(0xff00000000)] 
 rank_mask = [uint64(0xff), uint64(0xff00), uint64(0xff0000), uint64(0xff000000), uint64(0xff00000000), uint64(0xff0000000000), uint64(0xff000000000000), uint64(0xff00000000000000)]
+rook_occ = [0]*64
+rook_moves = [[0]*961]*64
 
 def init():
     init_king_attacks()
     init_knight_attacks()
+    gen_all_rook_occ()
 
-def gen_rook_occ():
-  for sq in xrange(64):
-    print sq
+def gen_rook_occ(sq):
+  ret_moves = []
+  sq_rank = sq >> 3
+  sq_file = sq & 7
+  ret = uint64(0)
+  for i in range(-1,sq_file):
+    ret_left = uint64(0)
+    if i >= 0:
+      ret_left = ret | uint64(1) << (8*sq_rank+i)
+    for j in range(sq_file+1,9):  
+      ret_right = ret_left 
+      if j < 8:
+        ret_right = ret_left | uint64(1) << (8*sq_rank+j)
+      for k in range(sq_rank+1,9):
+        ret_top = ret_right
+        if k < 8:
+          ret_top = ret_right | uint64(1) << (8*k+sq_file)
+        for l in range(-1,sq_rank):
+          ret_bottom = ret_top
+          if l >= 0:
+            ret_bottom = ret_top | uint64(1) << (8*l+sq_file)
+          ret_moves.append(uint64(ret_bottom))
+  return ret_moves
+
+def gen_all_rook_occ():
+  for i in xrange(64):
+    rook_occ[i] = (gen_rook_occ(i)) 
+
+def rook_attacks():
+  for sq,val in enumerate(rook_occ):
+    for occ in val:
+      ret = uint64(0)
+      sq_rank = sq >> 3
+      sq_file = sq & 7
+      for i in range(sq_file-1,-1,-1):                      
+        ret |= (uint64(1) << uint64(8*sq_rank+i))
+        if (((uint64(1) << uint64(8*sq_rank+i)) & occ) != 0): 
+          break
+      for i in range(sq_file+1,8):
+        ret |= (uint64(1) << uint64(8*sq_rank+i)) 
+        if (((uint64(1) << uint64(8*sq_rank+i)) & occ) != 0):
+          break
+      for i in range(sq_rank+1,8):
+        ret |= (uint64(1) << uint64(8*i+sq_file)) 
+        if (((uint64(1) << uint64(8*i+sq_file)) & occ) != 0):
+          break
+      for i in range(sq_rank-1,-1,-1):
+        ret |= (uint64(1) << uint64(8*i+sq_file)) 
+        if (((uint64(1) << uint64(8*i+sq_file)) & occ) != 0):
+          break
+      if (sq == 25):
+        index = ((occ & occupancy_mask_rook[sq]) * magic_number_rook[sq]) \
+            >> magic_number_shifts_rook[sq]
+        rook_moves[sq][index] = ret
 
 def knight_attacks(knight):
     east = east_one(knight)

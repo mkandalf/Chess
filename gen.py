@@ -1,7 +1,7 @@
 # To Do: Check detection, pawn promotion captures, sliding pieces
 import constants
 import util
-from constants import magic_number_rook, magic_number_bishop, magic_number_shifts_rook, magic_number_shifts_bishop, occupancy_mask_rook, occupancy_mask_bishop
+from constants import magic_number_rook, magic_number_bishop, magic_number_shifts_rook, magic_number_shifts_bishop, occupancy_mask_rook, occupancy_mask_bishop, rook_moves
 from board import PAWN, KING, BISHOP, KNIGHT, ROOK, QUEEN
 from numpy import uint64
 
@@ -134,12 +134,15 @@ def gen_knight_captures(board):
 
 def gen_sliding_moves(board):
   move_list = []
-  rooks = [25]
+  rooks = [3]
   for sq in rooks:
     print 25
-    move_list.append( 
-    (board.occupied_BB 
-    & occupancy_mask_rook[sq]) \
-    * magic_number_rook[sq] \
-    >> magic_number_shifts_rook[sq])
+    index = ((board.occupied_BB & occupancy_mask_rook[sq]) \
+    * magic_number_rook[sq]) \
+    >> magic_number_shifts_rook[sq]
+    util.print_bb(index)
+    print index
+    move_list.append(rook_moves[sq][index])
+    util.print_bb(rook_moves[sq][index])
+
   return move_list
