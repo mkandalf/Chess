@@ -74,4 +74,4 @@ def print_bb(a):
     f = i*8
     l = f+8
     print s[f:l]
-
+  print ''

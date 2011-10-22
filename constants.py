@@ -8,7 +8,7 @@ not_h_file = uint64(0x7f7f7f7f7f7f7f7f)
 pawn_advance_2_mask = [uint64(0xff000000), uint64(0xff00000000)] 
 rank_mask = [uint64(0xff), uint64(0xff00), uint64(0xff0000), uint64(0xff000000), uint64(0xff00000000), uint64(0xff0000000000), uint64(0xff000000000000), uint64(0xff00000000000000)]
 rook_occ = [0]*64
-rook_moves = [[0]*(2**12)]*64
+rook_moves = [[0 for x in range(2**12)] for x in range(64)]
 
 def init():
     init_king_attacks()
@@ -42,11 +42,10 @@ def gen_all_rook_occ():
 def rook_attacks():
   for sq,val in enumerate(rook_occ):
     print sq
-    print val
+    sq_rank = sq >> 3
+    sq_file = sq & 7
     for occ in val:
       ret = uint64(0)
-      sq_rank = sq >> 3
-      sq_file = sq & 7
       for i in range(sq_file-1,-1,-1):                      
         ret |= (uint64(1) << uint64(8*sq_rank+i))
         if (((uint64(1) << uint64(8*sq_rank+i)) & occ) != 0): 
