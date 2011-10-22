@@ -134,15 +134,13 @@ def gen_knight_captures(board):
 
 def gen_sliding_moves(board):
   move_list = []
-  rooks = [3]
+  rooks = [25]
   for sq in rooks:
-    print 25
     index = ((board.occupied_BB & occupancy_mask_rook[sq]) \
     * magic_number_rook[sq]) \
     >> magic_number_shifts_rook[sq]
     util.print_bb(index)
-    print index
     move_list.append(rook_moves[sq][index])
     util.print_bb(rook_moves[sq][index])
-
+    
   return move_list

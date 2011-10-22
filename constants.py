@@ -13,8 +13,11 @@ rook_moves = [[0 for x in range(2**12)] for x in range(64)]
 def init():
     init_king_attacks()
     init_knight_attacks()
-    gen_all_rook_occ()
-    rook_attacks()
+    load_pregen_rook_moves()
+
+def load_pregen_rook_moves():
+  global rook_moves
+  rook_moves = [[uint64(int(item.strip())) for item in line.rstrip('\r\n').split('\t')] for line in open('rook_moves')]
 
 def gen_rook_occ(sq):
   print sq
@@ -65,6 +68,8 @@ def rook_attacks():
       index = ((occ & occupancy_mask_rook[sq]) * magic_number_rook[sq]) \
         >> magic_number_shifts_rook[sq]
       rook_moves[sq][index] = ret
+  with open('rook_moves', 'w') as file:
+    file.writelines('\t'.join(map(str,i)) + '\n' for i in rook_moves)
 
 def knight_attacks(knight):
     east = east_one(knight)
