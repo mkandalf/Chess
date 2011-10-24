@@ -113,7 +113,7 @@ def gen_knight_moves(board):
     to = constants.all_knight_attacks[loc] & board.empty_BB
     while (to):
       move_list.append(
-        gen_move(util.bit_scan_forward(to), loc, 0, 0))
+        gen_move(util.bit_scan_forward(to), KNIGHT, loc, 0, 0))
       to = util.clear_least_bit(to)
   return move_list
 
@@ -128,19 +128,40 @@ def gen_knight_captures(board):
     while (to):
       temp_to = util.bit_scan_forward(to)
       move_list.append(
-        gen_move(temp_to, loc, board.piece_on_square[temp_to] - 2, 0))
+        gen_move(temp_to, loc, KNIGHT - 2, board.piece_square[temp_to] - 2, 0))
       to = util.clear_least_bit(to)
   return move_list
 
-def gen_sliding_moves(board):
+def gen_rook_moves(board):
   move_list = []
-  rooks = [25]
-  for sq in rooks:
+  rooks = board.piece_BB[ROOK] & board.piece_BB[board.to_move]
+  while rooks:
+    sq = util.bit_scan_forward(rooks)
+    rooks ^= uint64(1) << sq 
     index = ((board.occupied_BB & occupancy_mask_rook[sq]) \
     * magic_number_rook[sq]) \
     >> magic_number_shifts_rook[sq]
-    util.print_bb(index)
-    move_list.append(rook_moves[sq][index])
-    util.print_bb(rook_moves[sq][index])
-    
+    to = rook_moves[sq][index] & ~board.occupied_BB
+    while (to):
+      temp_to = util.bit_scan_forward(to)
+      move_list.append(
+        gen_move(temp_to, sq, ROOK - 2, 0, 0))
+      to = util.clear_least_bit(to)
+  return move_list
+
+def gen_rook_attacks(board):
+  move_list = []
+  rooks = board.piece_BB[ROOK] & board.piece_BB[board.to_move]
+  while rooks:
+    sq = util.bit_scan_forward(rooks)
+    rooks ^= uint64(1) << sq 
+    index = ((board.occupied_BB & occupancy_mask_rook[sq]) \
+    * magic_number_rook[sq]) \
+    >> magic_number_shifts_rook[sq]
+    to = rook_moves[sq][index] & board.piece_BB[util.flip(board.to_move)]
+    while (to):
+      temp_to = util.bit_scan_forward(to)
+      move_list.append(
+        gen_move(temp_to, sq, ROOK - 2, board.piece_square[temp_to] - 2, 0))
+      to = util.clear_least_bit(to)
   return move_list

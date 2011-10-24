@@ -17,6 +17,8 @@ rook_moves = [[0 for x in range(2**(64-magic_number_shifts_rook[y]))] for y in r
 def init():
     init_king_attacks()
     init_knight_attacks()
+#   gen_all_rook_occ()
+#   rook_attacks()
     load_pregen_rook_moves()
 
 def load_pregen_rook_moves():
@@ -29,7 +31,7 @@ def gen_rook_occ(sq):
   sq_file = sq & 7
   ret = uint64(0)
   for i in range(0,2**max(0,6-sq_file)):
-    ret_left = ret | (uint64(i) << uint64(8*sq_rank+sq_file))
+    ret_left = ret | (uint64(i) << uint64(8*sq_rank+sq_file+1))
     for j in range(0,2**max(0,sq_file-1)):  
       ret_right = ret_left | (uint64(j) << uint64(8*sq_rank+1))
       for k in range(0,2**max(0,sq_rank-1)):
@@ -37,7 +39,7 @@ def gen_rook_occ(sq):
           flip_diag_A1H8(uint64(k) << uint64(8*sq_file+1)) 
         for l in range(0,2**max(0,6-sq_rank)):
           ret_bottom = ret_top | \
-            flip_diag_A1H8(uint64(l) << uint64(8*sq_file+sq_rank)) 
+            flip_diag_A1H8(uint64(l) << uint64(8*sq_file+sq_rank+1)) 
           ret_moves.append(uint64(ret_bottom))
   return ret_moves
 
