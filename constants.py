@@ -24,21 +24,20 @@ def load_pregen_rook_moves():
   rook_moves = [[uint64(int(item.strip())) for item in line.rstrip('\r\n').split('\t')] for line in open('rook_moves')]
 
 def gen_rook_occ(sq):
-  print sq
   ret_moves = []
   sq_rank = sq >> 3
   sq_file = sq & 7
   ret = uint64(0)
-  for i in range(0,2**(7-sq_file)):
-    ret_left = ret | (uint64(i) << uint64(8*sq_rank+sq_file+1))
-    for j in range(0,2**sq_file):  
-      ret_right = ret_left | (uint64(j) << uint64(8*sq_rank))
-      for k in range(0,2**sq_rank):
+  for i in range(0,2**max(0,6-sq_file)):
+    ret_left = ret | (uint64(i) << uint64(8*sq_rank+sq_file))
+    for j in range(0,2**max(0,sq_file-1)):  
+      ret_right = ret_left | (uint64(j) << uint64(8*sq_rank+1))
+      for k in range(0,2**max(0,sq_rank-1)):
         ret_top = ret_right | \
-          flip_diag_A1H8(uint64(k) << uint64(8*sq_file)) 
-        for l in range(0,2**(7-sq_rank)):
+          flip_diag_A1H8(uint64(k) << uint64(8*sq_file+1)) 
+        for l in range(0,2**max(0,6-sq_rank)):
           ret_bottom = ret_top | \
-            flip_diag_A1H8(uint64(l) << uint64(8*sq_file+sq_rank+1)) 
+            flip_diag_A1H8(uint64(l) << uint64(8*sq_file+sq_rank)) 
           ret_moves.append(uint64(ret_bottom))
   return ret_moves
 
