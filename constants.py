@@ -79,13 +79,13 @@ def rook_attacks():
 def knight_attacks(knight):
     east = east_one(knight)
     west = west_one(knight)
-    attacks = (east|west) << 16
-    attacks |= (east|west) >> 16
+    attacks = north_one(north_one(east|west))
+    attacks |= south_one(south_one(east|west))
     east = east_one(east)
     west = west_one(west)
-    attacks |= (east|west) << 8
-    attacks |= (east|west) >> 8
-    return attacks
+    attacks |= north_one(east|west) 
+    attacks |= south_one(east|west)
+    return uint64(attacks)
 
 def king_attacks(king):
     attacks = east_one(king) | west_one(king)
