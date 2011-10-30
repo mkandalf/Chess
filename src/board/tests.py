@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 class TestUtilFunctions(unittest.TestCase):
   """Test for util.py"""
   def setUp(self):
