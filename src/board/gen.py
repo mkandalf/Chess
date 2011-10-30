@@ -1,9 +1,12 @@
-# To Do: Check detection, pawn promotion captures, sliding pieces
-import constants
-import util
-from constants import magic_number_rook, magic_number_bishop, magic_number_shifts_rook, magic_number_shifts_bishop, occupancy_mask_rook, occupancy_mask_bishop, rook_moves
-from board import PAWN, KING, BISHOP, KNIGHT, ROOK, QUEEN
 from numpy import uint64
+
+from board import PAWN, KING, BISHOP, KNIGHT, ROOK, QUEEN
+import constants
+from constants import magic_number_rook, magic_number_bishop, magic_number_shifts_rook, magic_number_shifts_bishop, occupancy_mask_rook, occupancy_mask_bishop, rook_moves
+import util
+
+
+# TODO: Check detection, pawn promotion captures, sliding pieces
 
 def gen_moves(board):
   constants.init()

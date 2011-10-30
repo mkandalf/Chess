@@ -1,6 +1,9 @@
-from numpy import uint64
+"""Contains the move class."""
 
-class Move(uint64):
+from numpy import uint16
+
+class Move(uint16):
+  """A move is a 16-bit integer consisting of all relevant information required for a move."""
   @property
   def from_(self):
     return self & 63

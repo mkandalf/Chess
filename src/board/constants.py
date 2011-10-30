@@ -1,4 +1,5 @@
 from numpy import uint64, binary_repr
+
 from util import north_one, south_one, east_one, west_one, print_bb, flip_diag_A1H8
 
 all_knight_attacks = [uint64(0)]*64
@@ -15,9 +16,9 @@ rook_occ = [0]*64
 rook_moves = [[0 for x in range(2**(64-magic_number_shifts_rook[y]))] for y in range(64)]
 
 def init():
-    init_king_attacks()
-    init_knight_attacks()
-    load_pregen_rook_moves()
+  init_king_attacks()
+  init_knight_attacks()
+  load_pregen_rook_moves()
 
 def load_pregen_rook_moves():
   global rook_moves
