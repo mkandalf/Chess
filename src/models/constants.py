@@ -4,8 +4,6 @@ from util import north_one, south_one, east_one, west_one, print_bb, flip_diag_A
 
 all_knight_attacks = [uint64(0)]*64
 all_king_attacks = [uint64(0)]*64
-not_a_file = uint64(0xfefefefefefefefe)
-not_h_file = uint64(0x7f7f7f7f7f7f7f7f)
 pawn_advance_2_mask = [uint64(0xff000000), uint64(0xff00000000)] 
 rank_mask = [uint64(0xff), uint64(0xff00), uint64(0xff0000), uint64(0xff000000), uint64(0xff00000000), uint64(0xff0000000000), uint64(0xff000000000000), uint64(0xff00000000000000)]
 magic_number_shifts_rook = [52,53,53,53,53,53,53,52,53,54,54,54,54,54,54,53,

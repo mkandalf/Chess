@@ -2,10 +2,10 @@
 import numpy as np
 
 
-def divide(n, k):
+def _divide(n, k):
   '''Divide n into sets of size of k or smaller.'''
   for i in range(0, len(n), k):
-      yield n[i:i+k]
+      yield n[i:i + k]
 
 
 class Bitboard(np.uint64):
@@ -21,26 +21,26 @@ class Bitboard(np.uint64):
       56, 45, 25, 31, 35, 16,  9, 12,
       44, 24, 15,  8, 23,  7,  6,  5]
   DEBRUIJN = np.uint64(0x07EDD5E59A4E28C2)
+  NOT_A_FILE = np.uint64(0xfefefefefefefefe)
+  NOT_H_FILE = np.uint64(0x7f7f7f7f7f7f7f7f)
+  ROW_WIDTH = 8
+
   def bit_scan_forward(self):
     return Bitboard(self.INDEX_64[((np.uint64(self & -self) * self.DEBRUIJN) >> 58)])
 
   def clear_least_bit(self):
     """Set the rightmost 1 to a 0.
-    
     In the case the bitboard is empty, do nothing."""
     return Bitboard(self & ~(np.uint64(1) << np.uint64(self.bit_scan_forward())))
 
-  NOT_H_FILE = np.uint64(0x7f7f7f7f7f7f7f7f)
   def east(self, shift=1):
     """Shift all the bits to the right. Bits in the H-column will be truncated."""
     return Bitboard((self >> np.uint64(shift)) & self.NOT_H_FILE)
 
-  NOT_A_FILE = np.uint64(0xfefefefefefefefe)
   def west(self, shift=1):
     """Shift all the bits to the left. Bits in the A-column will be truncated."""
     return Bitboard((self << np.uint64(shift)) & self.NOT_A_FILE)
 
-  ROW_WIDTH = 8
   def north(self, shift=1):
     """Shift all the bits up. Bits in the 8-row will be truncated."""
     return Bitboard((self << np.uint64(self.ROW_WIDTH * shift)))
@@ -71,10 +71,10 @@ class Bitboard(np.uint64):
     """Flip the board along the horizontal axis."""
     k1 = np.uint64(0x00FF00FF00FF00FF)
     k2 = np.uint64(0x0000FFFF0000FFFF)
-    self = ((self >>  np.uint64(8)) & k1) | ((self & k1) << np.uint64(8))
+    self = ((self >> np.uint64(8)) & k1) | ((self & k1) << np.uint64(8))
     self = ((self >> np.uint64(16)) & k2) | ((self & k2) << np.uint64(16))
-    self = ( self >> np.uint64(32))       | ( self       << np.uint64(32))
+    self = (self >> np.uint64(32)) | (self << np.uint64(32))
     return Bitboard(self)
 
   def __repr__(self):
-    return "\n".join(divide(np.binary_repr(self).zfill(64), self.ROW_WIDTH))
+    return "\n".join(_divide(np.binary_repr(self).zfill(64), self.ROW_WIDTH))
