@@ -2,6 +2,8 @@
 import numpy as np
 
 
+ROW_WIDTH = 8
+
 INDEX_64 = [
     63,  0, 58,  1, 59, 47, 53,  2,
     60, 39, 48, 27, 54, 33, 42,  3,
@@ -23,22 +25,18 @@ def clear_least_bit(bitboard):
 
 NOT_A_FILE = np.uint64(0xfefefefefefefefe)
 NOT_H_FILE = np.uint64(0x7f7f7f7f7f7f7f7f)
-#abstract these
-def east(bitboard, shift=1):
-  """Shift all the bits to the right. Bits in the H-column will be truncated."""
-  return Bitboard((bitboard >> np.uint64(shift)) & bitboard.NOT_H_FILE)
-
-def west(bitboard, shift=1):
-  """Shift all the bits to the left. Bits in the A-column will be truncated."""
-  return Bitboard((bitboard << np.uint64(shift)) & bitboard.NOT_A_FILE)
-
-def north(bitboard, shift=1):
-  """Shift all the bits up. Bits in the 8-row will be truncated."""
-  return Bitboard((bitboard << np.uint64(bitboard.ROW_WIDTH * shift)))
-
-def south(bitboard, shift=1):
-  """Shift all the bits down. Bits in the 1-row will be truncated."""
-  return Bitboard((bitboard >> np.uint64(bitboard.ROW_WIDTH * shift)))
+def shift(bitboard, x, y):
+  """Shift the bitboard by x and y."""
+  #we can't shift bits using a negative index, so we have to do some trickery
+  if x > 0:
+    bitboard = (bitboard >> np.uint64(x)) & NOT_H_FILE
+  elif x < 0:
+    bitboard = (bitboard << np.uint64(abs(x))) & NOT_A_FILE
+  if y > 0:
+    bitboard <<= np.uint64(ROW_WIDTH * y))
+  elif y < 0:
+    bitboard >>= np.uint64(ROW_WIDTH * abs(y)))
+  return bitboard
 
 def flip(bitboard):
   """Flip the least significant bit."""
@@ -72,6 +70,5 @@ def _divide(n, k):
   for i in range(0, len(n), k):
       yield n[i:i + k]
 
-ROW_WIDTH = 8
 def __repr__(bitboard):
   return "\n".join(_divide(np.binary_repr(bitboard).zfill(64), ROW_WIDTH))
