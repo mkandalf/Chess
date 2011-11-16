@@ -15,18 +15,44 @@ INDEX_64 = [
     56, 45, 25, 31, 35, 16,  9, 12,
     44, 24, 15,  8, 23,  7,  6,  5]
 DEBRUIJN = np.uint64(0x07EDD5E59A4E28C2)
-def bit_scan_forward(bitboard):
-  return INDEX_64[((np.uint64(bitboard & -bitboard) * DEBRUIJN) >> 58)]
-
-
-def clear_least_bit(bitboard):
-  """Set the rightmost 1 to a 0.
-  In the case the bitboard is empty, do nothing."""
-  return bitboard & ~(np.uint64(1) << np.uint64(bit_scan_forward(bitboard)))
-
 
 NOT_A_FILE = np.uint64(0xfefefefefefefefe)
 NOT_H_FILE = np.uint64(0x7f7f7f7f7f7f7f7f)
+
+
+#TODO: Add a meaningful doctest
+def bit_scan_forward(bitboard):
+  """Get the index of the first bit set to True."""
+  return INDEX_64[((np.uint64(bitboard & -bitboard) * DEBRUIJN) >> 58)]
+
+
+#TODO: Might make more sense to throw an exception.
+def clear_least_bit(bitboard):
+  """Set the rightmost 1 to a 0.
+  In the case the bitboard is empty, do nothing.
+  >>> bb = bitboard(0xf0f0f0f000000000)
+  >>> print_bb(bb)
+  11110000
+  11110000
+  11110000
+  11110000
+  00000000
+  00000000
+  00000000
+  00000000
+  >>> print_bb(clear_least_bit(bb))
+  11110000
+  11110000
+  11110000
+  11100000
+  00000000
+  00000000
+  00000000
+  00000000
+  """
+  return bitboard & ~(np.uint64(1) << np.uint64(bit_scan_forward(bitboard)))
+
+
 def shift(bitboard, x, y):
   """Shift the bitboard by the specified x and y.
   >>> bb = bitboard(0xf0f0f0f000000000)
@@ -68,29 +94,51 @@ def shift(bitboard, x, y):
   00001111
   >>> print_bb(shift(bb, 8, 0))
   00000000
-  01110000
-  01110000
-  01110000
-  01110000
+  00000000
+  00000000
+  00000000
+  00000000
   00000000
   00000000
   00000000
   """
-  #TODO: I'm not sure the behavior above is expected.
-  #we can't shift bits using a negative index, so we have to do some trickery
-  if x > 0:
-    bitboard = (bitboard >> np.uint64(x)) & NOT_H_FILE
-  elif x < 0:
-    bitboard = (bitboard << np.uint64(abs(x))) & NOT_A_FILE
-  if y > 0:
-    bitboard <<= np.uint64(ROW_WIDTH * y)
-  elif y < 0:
-    bitboard >>= np.uint64(ROW_WIDTH * abs(y))
+  while x > 0:
+    bitboard = (bitboard >> np.uint64(1)) & NOT_H_FILE
+    x -= 1
+  while x < 0:
+    bitboard = (bitboard << np.uint64(1)) & NOT_A_FILE
+    x += 1
+  while y > 0:
+    bitboard <<= ROW_WIDTH
+    y -= 1
+  while y < 0:
+    bitboard >>= ROW_WIDTH
+    y += 1
   return bitboard
 
 
 def flip(bitboard):
-  """Flip the least significant bit."""
+  """Flip the least significant bit.
+  >>> bb = bitboard(0xf0f0f0f000000000)
+  >>> print_bb(bb)
+  11110000
+  11110000
+  11110000
+  11110000
+  00000000
+  00000000
+  00000000
+  00000000
+  >>> print_bb(flip(bb))
+  11110000
+  11110000
+  11110000
+  11110000
+  00000000
+  00000000
+  00000000
+  00000001
+  """
   return bitboard ^ 1
 
 
@@ -153,8 +201,10 @@ def flip_vertical(bitboard):
   """
   k1 = np.uint64(0x00FF00FF00FF00FF)
   k2 = np.uint64(0x0000FFFF0000FFFF)
-  bitboard = ((bitboard >> np.uint64(8)) & k1) | ((bitboard & k1) << np.uint64(8))
-  bitboard = ((bitboard >> np.uint64(16)) & k2) | ((bitboard & k2) << np.uint64(16))
+  bitboard = ((bitboard >> np.uint64(8)) & k1) \
+      | ((bitboard & k1) << np.uint64(8))
+  bitboard = ((bitboard >> np.uint64(16)) & k2) \
+      | ((bitboard & k2) << np.uint64(16))
   bitboard = (bitboard >> np.uint64(32)) | (bitboard << np.uint64(32))
   return bitboard
 
