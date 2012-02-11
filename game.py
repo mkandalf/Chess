@@ -6,7 +6,6 @@ class Game(object):
     self.board = board
     self.players = players
 
-
   @property
   def _current_player(self):
     """The player whose turn it is."""
@@ -19,11 +18,13 @@ class Game(object):
   def play(self):
     """Play the game."""
     print "Starting game."
+    print "Press CTRL+D to quit."
     while not self.is_over(self._current_player):
-      move = self._current_player.move
+      move = self._current_player.get_move(self.board)
       try:
         self.board.make_move(move)
       except ValueError:
         print "Invalid move."
       else:
         self.turn += 1
+    print "Game over."
