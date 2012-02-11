@@ -3,10 +3,11 @@ import unittest
 from board import Board
 from game import Game
 from move import Move
-from player import Player
+from piece import King
+from player import Player, Color
 
 
-class GameTest(unittest.TestCase):
+class PlayerTest(unittest.TestCase):
   def setUp(self):
     self.board = Board(set())
     self.player = Player(None)
@@ -20,6 +21,22 @@ class GameTest(unittest.TestCase):
   def test_parse_move(self):
     expected = Move(None, (7, 7))
     self.assertEquals(self.player._parse_move('h7 h8', self.board), expected)
+
+
+class KingTest(unittest.TestCase):
+  def setUp(self):
+    self.player = Player(Color.WHITE)
+    self.board = Board(set())
+
+  def test_reachable_normal(self):
+    king = King(self.player, (4, 4))
+    reachable = len([_ for _ in king.reachable(self.board)])
+    self.assertTrue(reachable == 8, reachable)
+
+  def test_can_reach_normal(self):
+    king = King(self.player, (4, 4))
+    self.assertTrue(king.can_reach(self.board, (3, 3)))
+
 
 
 if __name__ == "__main__":

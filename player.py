@@ -37,3 +37,9 @@ class Player(object):
         return self._parse_move(raw_input("Please enter your move: "), board)
       except ValueError:
         print "Could not parse input. Try again."
+
+  def __eq__(self, other):
+    return self.color == other.color
+  
+  def __ne__(self, other):
+    return not self == other

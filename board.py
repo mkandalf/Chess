@@ -19,7 +19,7 @@ class Board(object):
   def is_legal(self, move):
     """Check if a move is legal."""
     # need some way to check if a move would result in check
-    raise NotImplemented
+    return move.piece.can_reach(self, move.to)
 
   def piece_at(self, location):
     """Get the piece at a given location or None if no piecei s found."""
