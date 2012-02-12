@@ -41,7 +41,11 @@ class Player(object):
                 print e
             else:
                 if move.piece is None:
-                    print("No piece found at %s." % start)
+                    print "No piece found at %s." % start
+                elif move.piece.owner != self:
+                    print "You do not own that piece."
+                elif not board.is_legal(move):
+                    print "Illegal move"
                 else:
                     return move
     
