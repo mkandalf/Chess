@@ -8,14 +8,15 @@ class Piece(object):
     """Abstract base class for pieces."""
     def __init__(self, owner, location):
         self.owner = owner
-        self.x, self.y = location
+        self.location = location
 
-    def get_location(self):
+    @property
+    def location(self):
         return self.x, self.y
 
-    def set_location(self, value):
+    @location.setter
+    def location(self, value):
         self.x, self.y = value
-    location = property(get_location, set_location)
 
     def reachable(self, board):
         """Get all the square reachable from the piece's current location.

@@ -17,20 +17,24 @@ class Board(object):
         for piece in self.pieces:
             if piece.owner == player:
                 if type(piece) == King:
-                    king = King
+                    king = piece
+                    break
         assert king is not None
         for piece in self.pieces:
             if piece.owner != player:
-                for move in piece.moves(self):
-                    if move.to == king.location:
+                for square in piece.reachable(self):
+                    if square == king.location:
                         return True
         return False
 
     def is_legal(self, move):
         """Check if a move is legal."""
         if move.piece.can_reach(self, move.to):
-            # Need a good way to check if the move would result in check
-            return True
+            pieces = self.pieces.copy()
+            self.make_move(move)
+            in_check = self.in_check(move.piece.owner)
+            self.pieces = pieces
+            return not in_check
         else:
             return False
 
@@ -65,10 +69,7 @@ class Board(object):
 
     def make_move(self, move):
         """Apply the given move to the board."""
-        if self.is_legal(move):
-            # TODO: Promotion
-            if self.piece_at(move.to):
-                self.pieces.remove(self.piece_at(move.to))
-            move.piece.location = move.to
-        else:
-            raise ValueError("Illegal move.")
+        # TODO: Promotion
+        if self.piece_at(move.to):
+            self.pieces.remove(self.piece_at(move.to))
+        move.piece.location = move.to
