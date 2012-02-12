@@ -17,8 +17,10 @@ class Piece(object):
     location = property(get_location, set_location)
 
     def reachable(self, board):
-        """Get all the square reachable from the piece's current location."""
-        pass
+        """Get all the square reachable from the piece's current location.
+        Reachable moves are guarantted to be on the board,
+        but not guaranteed to be legal."""
+        raise NotImplemented
 
     def moves(self, board):
         """Get all the possible moves for the piece."""
@@ -66,15 +68,15 @@ class Bishop(Piece):
 
 class Knight(Piece):
     def reachable(self, board):
-        yield self.x + 1, self.y + 2
-        yield self.x + 1, self.y - 2
-        yield self.x - 1, self.y + 2
-        yield self.x - 1, self.y - 2
-
-        yield self.x + 2, self.y + 1
-        yield self.x + 2, self.y - 1
-        yield self.x - 2, self.y + 1
-        yield self.x - 2, self.y - 1
+        vectors = ((1, 2), (1, -2), (-1, 2), (-1, -2),
+                (2, 1), (2, -1), (-2, 1), (-2, -1))
+        for vector in vectors:
+            x, y = vector
+            new_loc = self.x + x, self.y + y
+            if board.on_board(new_loc):
+                piece = board.piece_at(new_loc)
+                if piece is None or piece.owner != self.owner:
+                    yield new_loc
 
 
 class Rook(Piece):
@@ -130,14 +132,14 @@ class Rook(Piece):
 
 
 class King(Piece):
-  def reachable(self, board):
-    for x, y in product(range(-1, 2), range(-1, 2)):
-      if not (x == y == 0):
-        to = new_x, new_y = (self.x + x, self.y + y)
-        if 7 >= new_x >= 0 and 7 >= new_y >= 0:
-          piece = board.piece_at(to)
-          if piece is None or piece.owner != self.owner:
-            yield to
+    def reachable(self, board):
+        for x, y in product(range(-1, 2), range(-1, 2)):
+            if not (x == y == 0):
+                to = (self.x + x, self.y + y)
+                if board.on_board(to):
+                    piece = board.piece_at(to)
+                    if piece is None or piece.owner != self.owner:
+                        yield to
 
 
 class Queen(Piece):

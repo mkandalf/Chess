@@ -3,7 +3,7 @@ import unittest
 from board import Board
 from game import Game
 from move import Move
-from piece import King
+from piece import King, Knight
 from player import Player, Color
 
 
@@ -22,20 +22,40 @@ class PlayerTest(unittest.TestCase):
         self.assertEquals(self.player._parse_move('h7 h8', self.board), Move(None, (7, 7)))
 
 
-class KingTest(unittest.TestCase):
-  def setUp(self):
-    self.player = Player(Color.WHITE)
-    self.board = Board(set())
+class PieceTest(unittest.TestCase):
+    def setUp(self):
+        self.player = Player(Color.WHITE)
+        self.board = Board(set())
 
-  def test_reachable_normal(self):
-    king = King(self.player, (4, 4))
-    reachable = len([_ for _ in king.reachable(self.board)])
-    self.assertTrue(reachable == 8, reachable)
 
-  def test_can_reach_normal(self):
-    king = King(self.player, (4, 4))
-    self.assertTrue(king.can_reach(self.board, (3, 3)))
+class KingTest(PieceTest):
+    def test_reachable_center(self):
+        king = King(None, (4, 4))
+        reachable = len([_ for _ in king.reachable(self.board)])
+        self.assertTrue(reachable == 8, reachable)
 
+    def test_reachable_corner(self):
+        king = King(None, (0, 0))
+        reachable = len([_ for _ in king.reachable(self.board)])
+        self.assertTrue(reachable == 3, reachable)
+
+    def test_can_reach_normal(self):
+        king = King(None, (4, 4))
+        self.assertTrue(king.can_reach(self.board, (3, 3)))
+
+
+class KnightTest(PieceTest):
+    def test_reachable_center(self):
+        knight = Knight(None, (4, 4))
+        self.assertTrue(len([_ for _ in knight.reachable(self.board)]) == 8)
+
+    def test_reachable_corner(self):
+        knight = Knight(None, (0, 0))
+        self.assertTrue(len([_ for _ in knight.reachable(self.board)]) == 2)
+
+    def test_can_reach_normal(self):
+        knight = Knight(None, (1, 0))
+        self.assertTrue(knight.can_reach(self.board, (2, 2)))
 
 
 if __name__ == "__main__":

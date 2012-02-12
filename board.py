@@ -5,6 +5,11 @@ class Board(object):
         self.pieces = pieces
         self.width = self.height = 8
 
+    def on_board(self, loc):
+        """Check if a location is on the board."""
+        x, y = loc
+        return 0 <= x < self.width and 0 <= y < self.height
+
     def in_check(self, player):
         """Check if the player is in check."""
         # TODO: implement
