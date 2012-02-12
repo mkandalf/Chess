@@ -66,18 +66,10 @@ class Pawn(Piece):
         return "Pawn"
 
 
-class Bishop(Piece):
-    def reachable(self, board):
-        # TODO: Don't bs this
-        yield self.x + 1, self.y + 1
-
-    def __str__(self):
-        return "Bishop"
-
-
 class Knight(Piece):
     _vectors = ((1, 2), (1, -2), (-1, 2), (-1, -2),
             (2, 1), (2, -1), (-2, 1), (-2, -1))
+
     def reachable(self, board):
         for vector in self._vectors:
             x, y = vector
@@ -91,8 +83,32 @@ class Knight(Piece):
         return "Knight"
 
 
+class Bishop(Piece):
+    _vectors = ((1, 1), (-1, 1), (-1, -1), (1, -1))
+
+    def reachable(self, board):
+        for vector in self._vectors:
+            u, v = vector
+            x, y = self.x + u, self.y + v
+            while board.on_board((x, y)):
+                loc = (x, y)
+                piece = board.piece_at(loc)
+                if piece is None:
+                    yield loc
+                else:
+                    if piece.owner != self.owner:
+                        yield loc
+                    break
+                x += u
+                y += v
+
+    def __str__(self):
+        return "Bishop"
+
+
 class Rook(Piece):
     _vectors = ((1, 0), (0, 1), (-1, 0), (0, -1))
+
     def reachable(self, board):
         for vector in self._vectors:
             u, v = vector
@@ -128,14 +144,24 @@ class King(Piece):
 
 
 class Queen(Piece):
+    _vectors = ((1, 0), (0, 1), (-1, 0), (0, -1),
+            (1, 1), (-1, -1), (1, -1), (-1, 1))
+
     def reachable(self, board):
-        for x, y in product(range(-1, 2), range(-1, 2)):
-            if not (x == y == 0):
-                to = (self.x + x, self.y + y)
-                if board.on_board(to):
-                    piece = board.piece_at(to)
-                    if piece is None or piece.owner != self.owner:
-                        yield to
+        for vector in self._vectors:
+            u, v = vector
+            x, y = self.x + u, self.y + v
+            while board.on_board((x, y)):
+                loc = (x, y)
+                piece = board.piece_at(loc)
+                if piece is None:
+                    yield loc
+                else:
+                    if piece.owner != self.owner:
+                        yield loc
+                    break
+                x += u
+                y += v
 
     def __str__(self):
         return "Queen"

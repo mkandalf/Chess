@@ -2,7 +2,7 @@ import unittest
 
 from board import Board
 from move import Move
-from piece import King, Knight, Rook
+from piece import King, Knight, Rook, Bishop, Queen
 from player import Player, Color
 
 class ChessTest(unittest.TestCase):
@@ -148,6 +148,50 @@ class RookTest(ChessTest):
         self.board.pieces.add(king)
         reachable = [_ for _ in rook.reachable(self.board)]
         self.assertEquals(len(reachable), 7, reachable)
+
+
+class BishopTest(ChessTest):
+    def test_reachable_center(self):
+        bishop = Bishop(self.white, (4, 4))
+        self.board.pieces.add(bishop)
+        reachable = [_ for _ in bishop.reachable(self.board)]
+        self.assertEquals(len(reachable), 13, reachable)
+
+    def test_reachable_corner(self):
+        bishop = Bishop(self.white, (0, 0))
+        self.board.pieces.add(bishop)
+        reachable = [_ for _ in bishop.reachable(self.board)]
+        self.assertEquals(len(reachable), 7, reachable)
+
+    def test_reachable_corner_blocked(self):
+        bishop = Bishop(self.white, (0, 0))
+        king = King(self.white, (1, 1))
+        self.board.pieces.add(bishop)
+        self.board.pieces.add(king)
+        reachable = [_ for _ in bishop.reachable(self.board)]
+        self.assertEquals(len(reachable), 0, reachable)
+
+
+class QuenTest(ChessTest):
+    def test_reachable_center(self):
+        queen = Queen(self.white, (4, 4))
+        self.board.pieces.add(queen)
+        reachable = [_ for _ in queen.reachable(self.board)]
+        self.assertEquals(len(reachable), 13 + 14, reachable)
+
+    def test_reachable_corner(self):
+        queen = Queen(self.white, (0, 0))
+        self.board.pieces.add(queen)
+        reachable = [_ for _ in queen.reachable(self.board)]
+        self.assertEquals(len(reachable), 21, reachable)
+
+    def test_reachable_corner_blocked(self):
+        queen = Queen(self.white, (0, 0))
+        king = King(self.white, (1, 1))
+        self.board.pieces.add(queen)
+        self.board.pieces.add(king)
+        reachable = [_ for _ in queen.reachable(self.board)]
+        self.assertEquals(len(reachable), 14, reachable)
 
 
 if __name__ == "__main__":
