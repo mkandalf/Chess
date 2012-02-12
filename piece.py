@@ -76,10 +76,10 @@ class Bishop(Piece):
 
 
 class Knight(Piece):
+    _vectors = ((1, 2), (1, -2), (-1, 2), (-1, -2),
+            (2, 1), (2, -1), (-2, 1), (-2, -1))
     def reachable(self, board):
-        vectors = ((1, 2), (1, -2), (-1, 2), (-1, -2),
-                (2, 1), (2, -1), (-2, 1), (-2, -1))
-        for vector in vectors:
+        for vector in self._vectors:
             x, y = vector
             new_loc = self.x + x, self.y + y
             if board.on_board(new_loc):
@@ -92,54 +92,22 @@ class Knight(Piece):
 
 
 class Rook(Piece):
+    _vectors = ((1, 0), (0, 1), (-1, 0), (0, -1))
     def reachable(self, board):
-        x = self.x + 1
-        while x < board.width:
-            loc = (x, self.y)
-            piece = board.piece_at(loc)
-            if piece is None:
-                yield loc
-            else:
-                if piece.owner != self.owner:
+        for vector in self._vectors:
+            u, v = vector
+            x, y = self.x + u, self.y + v
+            while board.on_board((x, y)):
+                loc = (x, y)
+                piece = board.piece_at(loc)
+                if piece is None:
                     yield loc
-                break
-            x += 1
-
-        x = self.x - 1
-        while x >= 0:
-            loc = (x, self.y)
-            piece = board.piece_at(loc)
-            if piece is None:
-                yield loc
-            else:
-                if piece.owner != self.owner:
-                    yield loc
-                break
-            x -= 1
-
-        y = self.y - 1
-        while y >= 0:
-            loc = (self.x, y)
-            piece = board.piece_at(loc)
-            if piece is None:
-                yield loc
-            else:
-                if piece.owner != self.owner:
-                    yield loc
-                break
-            y -= 1
-
-        y = self.y + 1
-        while y < board.height:
-            loc = (self.x, y)
-            piece = board.piece_at(loc)
-            if piece is None:
-                yield loc
-            else:
-                if piece.owner != self.owner:
-                    yield loc
-                break
-            y += 1
+                else:
+                    if piece.owner != self.owner:
+                        yield loc
+                    break
+                x += u
+                y += v
 
     def __str__(self):
         return "Rook"

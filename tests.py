@@ -2,7 +2,7 @@ import unittest
 
 from board import Board
 from move import Move
-from piece import King, Knight
+from piece import King, Knight, Rook
 from player import Player, Color
 
 class ChessTest(unittest.TestCase):
@@ -117,7 +117,7 @@ class KingTest(ChessTest):
 class KnightTest(ChessTest):
     def test_reachable_center(self):
         knight = Knight(None, (4, 4))
-        self.assertTrue(len([_ for _ in knight.reachable(self.board)]) == 8)
+        self.assertEquals(len([_ for _ in knight.reachable(self.board)]), 8)
 
     def test_reachable_corner(self):
         knight = Knight(None, (0, 0))
@@ -126,6 +126,28 @@ class KnightTest(ChessTest):
     def test_can_reach_normal(self):
         knight = Knight(None, (0, 0))
         self.assertTrue(knight.can_reach(self.board, (1, 2)))
+
+
+class RookTest(ChessTest):
+    def test_reachable_center(self):
+        rook = Rook(self.white, (4, 4))
+        self.board.pieces.add(rook)
+        reachable = [_ for _ in rook.reachable(self.board)]
+        self.assertEquals(len(reachable), 14, reachable)
+
+    def test_reachable_corner(self):
+        rook = Rook(self.white, (0, 0))
+        self.board.pieces.add(rook)
+        reachable = [_ for _ in rook.reachable(self.board)]
+        self.assertEquals(len(reachable), 14, reachable)
+
+    def test_reachable_corner_blocked(self):
+        rook = Rook(self.white, (0, 0))
+        king = King(self.white, (0, 1))
+        self.board.pieces.add(rook)
+        self.board.pieces.add(king)
+        reachable = [_ for _ in rook.reachable(self.board)]
+        self.assertEquals(len(reachable), 7, reachable)
 
 
 if __name__ == "__main__":
