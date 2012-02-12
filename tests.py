@@ -5,11 +5,13 @@ from move import Move
 from piece import King, Knight, Rook, Bishop, Queen
 from player import Player, Color
 
+
 class ChessTest(unittest.TestCase):
     def setUp(self):
         self.board = Board(set())
         self.white = Player(Color.WHITE)
         self.black = Player(Color.BLACK)
+
 
 class PlayerTest(ChessTest):
     def test_parse_square_a1(self):
@@ -160,7 +162,7 @@ class PieceAtTest(ChessTest):
     def test_no_piece(self):
         self.assertEquals(self.board.piece_at((0, 0)), None)
 
-    def test_no_piece(self):
+    def test_piece(self):
         king = King(self.white, (0, 0))
         self.board.pieces.add(king)
         self.assertEquals(self.board.piece_at((0, 0)), king)
