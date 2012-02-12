@@ -74,23 +74,23 @@ class MakeMoveTest(ChessTest):
         self.assertTrue(knight not in self.board.pieces)
 
     def test_make_move_promotion_pawn_removed(self):
-        pawn = King(self.white, (1, 6))
+        pawn = Pawn(self.white, (0, 6))
         self.board.pieces.add(pawn)
-        self.board.make_move(Move(pawn, None, (1, 1), (2, 2), Queen))
+        self.board.make_move(Move(pawn, None, (0, 6), (0, 7), Queen))
         self.assertTrue(pawn not in self.board.pieces)
 
     def test_make_move_promotion_piece_added(self):
-        pawn = King(self.white, (1, 6))
+        pawn = Pawn(self.white, (0, 6))
         self.board.pieces.add(pawn)
-        self.board.make_move(Move(pawn, None, (1, 1), (2, 2), Queen))
+        self.board.make_move(Move(pawn, None, (0, 6), (0, 7), Queen))
         self.assertEquals(len(self.board.pieces), 1)
 
     def test_make_move_promotion_queen_added(self):
-        pawn = King(self.white, (1, 6))
+        pawn = Pawn(self.white, (0, 6))
         self.board.pieces.add(pawn)
-        self.board.make_move(Move(pawn, None, (1, 1), (2, 2), Queen))
+        self.board.make_move(Move(pawn, None, (0, 6), (0, 7), Queen))
         queen = self.board.pieces.pop()
-        self.assertEquals(type(queen), Queen)
+        self.assertEquals(queen, Queen(self.white, (0, 7)))
 
 
 class IsLegalTest(ChessTest):

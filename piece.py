@@ -34,6 +34,12 @@ class Piece(object):
         """Check if the given square is reachable."""
         return any(s == square for s in self.reachable(board))
 
+    def __eq__(self, other):
+        return self.owner == other.owner and self.location == other.location
+
+    def __ne__(self, other):
+        return not self == other
+
     def __repr__(self):
         return "%s %s" % (str(self), self.location)
 
