@@ -25,6 +25,13 @@ class PlayerTest(ChessTest):
         got = self.white._parse_move('h7 h8', self.board)
         self.assertEquals(got, expected)
 
+    def test_parse_move_piece(self):
+        king = King(self.white, (4, 4))
+        self.board.pieces.add(king)
+        expected = Move(king, (5, 5))
+        got = self.white._parse_move('e5 f6', self.board)
+        self.assertEquals(got, expected)
+
 
 class OnBoardTest(ChessTest):
     def test_on_board_center(self):
@@ -36,7 +43,7 @@ class OnBoardTest(ChessTest):
     def test_on_board_corner2(self):
         self.assertTrue(self.board.on_board((7, 7)))
 
-    def test_on_board_corner2_2(self):
+    def test_off_board(self):
         self.assertFalse(self.board.on_board((8, 8)))
 
 
@@ -170,31 +177,65 @@ class PieceAtTest(ChessTest):
 
 class KingTest(ChessTest):
     def test_reachable_center(self):
-        king = King(None, (4, 4))
-        reachable = len([_ for _ in king.reachable(self.board)])
-        self.assertTrue(reachable == 8, reachable)
+        king = King(self.white, (4, 4))
+        reachable = list(king.reachable(self.board))
+        self.assertEquals(len(reachable), 8, reachable)
+
+    def test_reachable_blocked_ally(self):
+        king = King(self.white, (4, 4))
+        knight = Knight(self.white, (3, 3))
+        self.board.pieces.add(knight)
+        reachable = list(king.reachable(self.board))
+        self.assertEquals(len(reachable), 7, reachable)
+
+    def test_reachable_blocked_enemy(self):
+        king = King(self.white, (4, 4))
+        knight = Knight(self.black, (3, 3))
+        self.board.pieces.add(knight)
+        reachable = list(king.reachable(self.board))
+        self.assertEquals(len(reachable), 8, reachable)
 
     def test_reachable_corner(self):
-        king = King(None, (0, 0))
-        reachable = len([_ for _ in king.reachable(self.board)])
-        self.assertTrue(reachable == 3, reachable)
+        king = King(self.white, (0, 0))
+        reachable = list(king.reachable(self.board))
+        self.assertEquals(len(reachable), 3, reachable)
 
     def test_can_reach_normal(self):
-        king = King(None, (4, 4))
+        king = King(self.white, (4, 4))
         self.assertTrue(king.can_reach(self.board, (3, 3)))
+
+    def test_cant_reach(self):
+        king = King(self.white, (4, 4))
+        self.assertFalse(king.can_reach(self.board, (2, 2)))
 
 
 class KnightTest(ChessTest):
     def test_reachable_center(self):
-        knight = Knight(None, (4, 4))
-        self.assertEquals(len([_ for _ in knight.reachable(self.board)]), 8)
+        knight = Knight(self.white, (4, 4))
+        reachable = list(knight.reachable(self.board))
+        self.assertEquals(len(reachable), 8)
 
     def test_reachable_corner(self):
-        knight = Knight(None, (0, 0))
-        self.assertTrue(len([_ for _ in knight.reachable(self.board)]) == 2)
+        knight = Knight(self.white, (0, 0))
+        reachable = list(knight.reachable(self.board))
+        self.assertEquals(len(reachable), 2)
+
+    def test_reachable_blocked_ally(self):
+        knight = Knight(self.white, (0, 0))
+        bishop = Bishop(self.white, (1, 2))
+        self.board.pieces.add(bishop)
+        reachable = list(knight.reachable(self.board))
+        self.assertEquals(len(reachable), 1)
+
+    def test_reachable_blocked_enemy(self):
+        knight = Knight(self.white, (0, 0))
+        bishop = Bishop(self.black, (1, 2))
+        self.board.pieces.add(bishop)
+        reachable = list(knight.reachable(self.board))
+        self.assertEquals(len(reachable), 2)
 
     def test_can_reach_normal(self):
-        knight = Knight(None, (0, 0))
+        knight = Knight(self.white, (0, 0))
         self.assertTrue(knight.can_reach(self.board, (1, 2)))
 
 
@@ -202,44 +243,60 @@ class RookTest(ChessTest):
     def test_reachable_center(self):
         rook = Rook(self.white, (4, 4))
         self.board.pieces.add(rook)
-        reachable = [_ for _ in rook.reachable(self.board)]
+        reachable = list(rook.reachable(self.board))
         self.assertEquals(len(reachable), 14, reachable)
 
     def test_reachable_corner(self):
         rook = Rook(self.white, (0, 0))
         self.board.pieces.add(rook)
-        reachable = [_ for _ in rook.reachable(self.board)]
+        reachable = list(rook.reachable(self.board))
         self.assertEquals(len(reachable), 14, reachable)
 
-    def test_reachable_corner_blocked(self):
+    def test_reachable_blocked_ally(self):
         rook = Rook(self.white, (0, 0))
-        king = King(self.white, (0, 1))
+        knight = Knight(self.white, (0, 1))
         self.board.pieces.add(rook)
-        self.board.pieces.add(king)
-        reachable = [_ for _ in rook.reachable(self.board)]
+        self.board.pieces.add(knight)
+        reachable = list(rook.reachable(self.board))
         self.assertEquals(len(reachable), 7, reachable)
+
+    def test_reachable_blocked_enemy(self):
+        rook = Rook(self.white, (0, 0))
+        knight = Knight(self.black, (0, 1))
+        self.board.pieces.add(rook)
+        self.board.pieces.add(knight)
+        reachable = list(rook.reachable(self.board))
+        self.assertEquals(len(reachable), 8, reachable)
 
 
 class BishopTest(ChessTest):
     def test_reachable_center(self):
         bishop = Bishop(self.white, (4, 4))
         self.board.pieces.add(bishop)
-        reachable = [_ for _ in bishop.reachable(self.board)]
+        reachable = list(bishop.reachable(self.board))
         self.assertEquals(len(reachable), 13, reachable)
 
     def test_reachable_corner(self):
         bishop = Bishop(self.white, (0, 0))
         self.board.pieces.add(bishop)
-        reachable = [_ for _ in bishop.reachable(self.board)]
+        reachable = list(bishop.reachable(self.board))
         self.assertEquals(len(reachable), 7, reachable)
 
-    def test_reachable_corner_blocked(self):
+    def test_reachable_blocked_ally(self):
         bishop = Bishop(self.white, (0, 0))
-        king = King(self.white, (1, 1))
+        knight = Knight(self.white, (1, 1))
         self.board.pieces.add(bishop)
-        self.board.pieces.add(king)
-        reachable = [_ for _ in bishop.reachable(self.board)]
+        self.board.pieces.add(knight)
+        reachable = list(bishop.reachable(self.board))
         self.assertEquals(len(reachable), 0, reachable)
+
+    def test_reachable_blocked_enemy(self):
+        bishop = Bishop(self.white, (0, 0))
+        knight = Knight(self.black, (1, 1))
+        self.board.pieces.add(bishop)
+        self.board.pieces.add(knight)
+        reachable = list(bishop.reachable(self.board))
+        self.assertEquals(len(reachable), 1, reachable)
 
 
 class QueenTest(ChessTest):
@@ -255,13 +312,21 @@ class QueenTest(ChessTest):
         reachable = [_ for _ in queen.reachable(self.board)]
         self.assertEquals(len(reachable), 21, reachable)
 
-    def test_reachable_corner_blocked(self):
+    def test_reachable_blocked_ally(self):
         queen = Queen(self.white, (0, 0))
         king = King(self.white, (1, 1))
         self.board.pieces.add(queen)
         self.board.pieces.add(king)
         reachable = [_ for _ in queen.reachable(self.board)]
         self.assertEquals(len(reachable), 14, reachable)
+
+    def test_reachable_blocked_enemy(self):
+        queen = Queen(self.white, (0, 0))
+        king = King(self.black, (1, 1))
+        self.board.pieces.add(queen)
+        self.board.pieces.add(king)
+        reachable = [_ for _ in queen.reachable(self.board)]
+        self.assertEquals(len(reachable), 15, reachable)
 
 
 if __name__ == "__main__":
