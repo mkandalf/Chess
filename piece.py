@@ -28,7 +28,7 @@ class Piece(object):
         """Get all the possible moves for the piece.
         Moves are not guaranteed to be legal."""
         for square in self.reachable(board):
-            yield Move(self, board.piece_at(square), square, (self.x, self.y))
+            yield Move(self, board.piece_at(square), (self.x, self.y), square)
 
     def can_reach(self, board, square):
         """Check if the given square is reachable."""

@@ -31,7 +31,7 @@ class Player(object):
             start_sq = self._parse_square(start)
             piece = board.piece_at(start_sq)
             to = self._parse_square(end)
-            return Move(piece, board.piece_at(to), to, start_sq)
+            return Move(piece, board.piece_at(to), start_sq, to)
         else:
             raise ValueError("Could not parse input. Try again.")
 

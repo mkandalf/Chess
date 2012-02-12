@@ -1,7 +1,7 @@
 
 
 class Move(object):
-    def __init__(self, piece, captured, to, start):
+    def __init__(self, piece, captured, start, to):
         self.to = to
         self.start = start
         self.piece = piece
