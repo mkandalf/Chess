@@ -1,4 +1,4 @@
-from piece import King
+from piece import King, Pawn
 
 
 class Board(object):
@@ -29,16 +29,24 @@ class Board(object):
 
     def make_move(self, move):
         """Apply the given move to the board."""
-        # TODO: Promotion, castling
+        # TODO: Castling
         if self.piece_at(move.to):
             self.pieces.remove(self.piece_at(move.to))
         move.piece.location = move.to
+        if move.promotion is not None:
+            promoted = move.promotion(move.piece.owner, move.piece.location)
+            self.pieces.remove(move.piece)
+            self.pieces.add(promoted)
 
     def undo_move(self, move):
         """Apply the move in reverse to the board."""
         move.piece.location = move.start
         if move.captured is not None:
             self.pieces.add(move.captured)
+        if move.promotion is not None:
+            pawn = Pawn(move.piece.owner, move.piece.location)
+            self.pieces.remove(move.piece)
+            self.pieces.add(pawn)
 
     def is_legal(self, move):
         """Check if a move is legal."""
