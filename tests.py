@@ -8,19 +8,18 @@ from player import Player, Color
 
 
 class PlayerTest(unittest.TestCase):
-  def setUp(self):
-    self.board = Board(set())
-    self.player = Player(None)
+    def setUp(self):
+        self.board = Board(set())
+        self.player = Player(None)
 
-  def test_parse_square_a1(self):
-    self.assertEquals((0, 0), self.player._parse_square('a1'))
+    def test_parse_square_a1(self):
+        self.assertEquals((0, 0), self.player._parse_square('a1'))
 
-  def test_parse_square_h8(self):
-    self.assertEquals((7, 7), self.player._parse_square('h8'))
+    def test_parse_square_h8(self):
+        self.assertEquals((7, 7), self.player._parse_square('h8'))
 
-  def test_parse_move(self):
-    expected = Move(None, (7, 7))
-    self.assertEquals(self.player._parse_move('h7 h8', self.board), expected)
+    def test_parse_move_no_piece(self):
+        self.assertEquals(self.player._parse_move('h7 h8', self.board), Move(None, (7, 7)))
 
 
 class KingTest(unittest.TestCase):
