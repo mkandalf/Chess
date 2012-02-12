@@ -2,9 +2,28 @@ from piece import King
 
 
 class Board(object):
-    def __init__(self, pieces):
+    def __init__(self, pieces = set()):
         self.pieces = pieces
         self.width = self.height = 8
+
+
+    def __str__(self):
+        a = [[" " for i in xrange(8)] for x in xrange(8)]
+        divide = "+ - + - + - + - + - + - + - + - +"
+        for piece in self.pieces:
+            piece_str = str(piece)[0]
+            if str(piece) == "Knight":
+                piece_str = "N"
+            if piece.owner != self.players[0]:
+                piece_str = piece_str.lower()
+            a[piece.location[1]][piece.location[0]] = piece_str
+        for row in a:
+            print divide
+            for sq in row:
+                if sq:
+                    print "|", sq,
+            print "|"
+        print divide
 
     def on_board(self, loc):
         """Check if a location is on the board."""

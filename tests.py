@@ -4,6 +4,7 @@ from board import Board
 from move import Move
 from piece import King, Knight, Rook, Bishop, Queen
 from player import Player, Color
+from game import Game
 
 
 class ChessTest(unittest.TestCase):
@@ -12,6 +13,19 @@ class ChessTest(unittest.TestCase):
         self.white = Player(Color.WHITE)
         self.black = Player(Color.BLACK)
 
+
+class GameTest(unittest.TestCase):
+    def setUp(self):
+        self.game = Game(Board())
+        self.game.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") 
+    def test_ply(self):
+        expected = 0
+        got = self.game.ply
+        self.assertEquals(got, expected) 
+    def test_pieces(self):
+        expected = "Knight"
+        got = str(self.game.board.piece_at((1, 0)))
+        self.assertEquals(got, expected)
 
 class PlayerTest(ChessTest):
     def test_parse_square_a1(self):
