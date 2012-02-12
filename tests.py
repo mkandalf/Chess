@@ -138,7 +138,7 @@ class StalemateTest(ChessTest):
         self.assertTrue(self.board.is_stalemate(self.white))
 
 
-class IsOverTest(ChessTest):
+class CheckmateTest(ChessTest):
     def test_not_checkmate(self):
         king = King(self.white, (0, 0))
         rook1 = Rook(self.black, (8, 1))
