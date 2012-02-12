@@ -1,7 +1,6 @@
 import unittest
 
 from board import Board
-from game import Game
 from move import Move
 from piece import King, Knight
 from player import Player, Color
@@ -19,7 +18,9 @@ class PlayerTest(unittest.TestCase):
         self.assertEquals((7, 7), self.player._parse_square('h8'))
 
     def test_parse_move_no_piece(self):
-        self.assertEquals(self.player._parse_move('h7 h8', self.board), Move(None, (7, 7)))
+        expected = Move(None, (7, 7))
+        got = self.player._parse_move('h7 h8', self.board)
+        self.assertEquals(got, expected)
 
 
 class BoardTest(unittest.TestCase):
@@ -94,4 +95,4 @@ class KnightTest(PieceTest):
 
 
 if __name__ == "__main__":
-  unittest.main()
+    unittest.main()
