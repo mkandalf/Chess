@@ -24,7 +24,8 @@ class Piece(object):
         raise NotImplemented
 
     def moves(self, board):
-        """Get all the possible moves for the piece."""
+        """Get all the possible moves for the piece.
+        Moves are not guaranteed to be legal."""
         for square in self.reachable(board):
             yield Move(self, square)
 

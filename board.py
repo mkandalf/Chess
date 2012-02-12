@@ -1,3 +1,4 @@
+from piece import King
 
 
 class Board(object):
@@ -12,7 +13,17 @@ class Board(object):
 
     def in_check(self, player):
         """Check if the player is in check."""
-        # TODO: implement
+        king = None
+        for piece in self.pieces:
+            if piece.owner == player:
+                if type(piece) == King:
+                    king = King
+        assert king is not None
+        for piece in self.pieces:
+            if piece.owner != player:
+                for move in piece.moves(self):
+                    if move.to == king.location:
+                        return True
         return False
 
     def is_legal(self, move):
