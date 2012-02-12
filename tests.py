@@ -98,6 +98,74 @@ class MovesTest(ChessTest):
                 (piece_moves, board_moves))
 
 
+class IsOverTest(ChessTest):
+    def test_over(self):
+        king = King(self.white, (0, 0))
+        rook1 = Rook(self.black, (8, 0))
+        rook2 = Rook(self.black, (8, 1))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook1)
+        self.board.pieces.add(rook2)
+        self.assertTrue(self.board.is_over(self.white))
+
+    def test_not_over(self):
+        king = King(self.white, (0, 0))
+        rook1 = Rook(self.black, (8, 0))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook1)
+        self.assertFalse(self.board.is_over(self.white))
+
+
+class StalemateTest(ChessTest):
+    def test_not_stalemate(self):
+        king = King(self.white, (0, 0))
+        rook1 = Rook(self.black, (8, 0))
+        rook2 = Rook(self.black, (8, 1))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook1)
+        self.board.pieces.add(rook2)
+        self.assertFalse(self.board.is_stalemate(self.white))
+
+    def test_stalemate(self):
+        king = King(self.white, (0, 0))
+        rook1 = Rook(self.black, (8, 1))
+        rook2 = Rook(self.black, (1, 8))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook1)
+        self.board.pieces.add(rook2)
+        self.assertTrue(self.board.is_stalemate(self.white))
+
+
+class IsOverTest(ChessTest):
+    def test_not_checkmate(self):
+        king = King(self.white, (0, 0))
+        rook1 = Rook(self.black, (8, 1))
+        rook2 = Rook(self.black, (1, 8))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook1)
+        self.board.pieces.add(rook2)
+        self.assertFalse(self.board.is_checkmate(self.white))
+
+    def test_not_over(self):
+        king = King(self.white, (0, 0))
+        rook1 = Rook(self.black, (8, 0))
+        rook2 = Rook(self.black, (8, 1))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook1)
+        self.board.pieces.add(rook2)
+        self.assertTrue(self.board.is_checkmate(self.white))
+
+
+class PieceAtTest(ChessTest):
+    def test_no_piece(self):
+        self.assertEquals(self.board.piece_at((0, 0)), None)
+
+    def test_no_piece(self):
+        king = King(self.white, (0, 0))
+        self.board.pieces.add(king)
+        self.assertEquals(self.board.piece_at((0, 0)), king)
+
+
 class KingTest(ChessTest):
     def test_reachable_center(self):
         king = King(None, (4, 4))
@@ -172,7 +240,7 @@ class BishopTest(ChessTest):
         self.assertEquals(len(reachable), 0, reachable)
 
 
-class QuenTest(ChessTest):
+class QueenTest(ChessTest):
     def test_reachable_center(self):
         queen = Queen(self.white, (4, 4))
         self.board.pieces.add(queen)

@@ -58,13 +58,13 @@ class Board(object):
 
     def is_over(self, player):
         """Check if the game is over for the given player."""
-        return len(list(self.moves(player)))
+        return len(list(self.moves(player))) == 0
 
-    def stalemated(self, player):
+    def is_stalemate(self, player):
         """Check if the given player is stalemated."""
         return self.is_over(player) and not self.in_check(player)
 
-    def checkmated(self, player):
+    def is_checkmate(self, player):
         """Check if the given player is checkmated."""
         return self.is_over(player) and self.in_check(player)
 

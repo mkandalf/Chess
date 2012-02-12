@@ -11,5 +11,8 @@ class Move(object):
     def __ne__(self, other):
         return not self == other
 
+    def __str__(self):
+        return "%s to %s" % (str(self.piece), self.to)
+
     def __repr__(self):
         return "%s to %s" % (repr(self.piece), self.to)
