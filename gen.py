@@ -1,7 +1,13 @@
-# To Do: Check detection, pawn promotion captures, sliding pieces
+# To Do: Check detection, pawn promotion captures, diagonally sliding pieces
 import constants
 import util
-from constants import magic_number_rook, magic_number_bishop, magic_number_shifts_rook, magic_number_shifts_bishop, occupancy_mask_rook, occupancy_mask_bishop, rook_moves
+from constants import magic_number_rook, \
+                      magic_number_bishop, \
+                      magic_number_shifts_rook, \
+                      magic_number_shifts_bishop, \
+                      occupancy_mask_rook, \
+                      occupancy_mask_bishop, \
+                      rook_moves
 from board import PAWN, KING, BISHOP, KNIGHT, ROOK, QUEEN
 from numpy import uint64
 
@@ -24,8 +30,8 @@ def gen_move(p_to, p_from, piece, capture, promote):
 def gen_king_moves(board):
   move_list = []
   king_index = board.king_square[board.to_move] 
-  to = constants.all_king_attacks[king_index] \
-       & ~board.piece_BB[board.to_move]
+  to = (constants.all_king_attacks[king_index]
+       & ~board.piece_BB[board.to_move])
   while (to):
     move_list.append(
       gen_move(util.bit_scan_forward(to), board.king_square[board.to_move],
@@ -37,11 +43,11 @@ def gen_pawn_moves(board):
   move_list = []
   froms = board.piece_BB[PAWN] & board.piece_BB[board.to_move]
   pawn_advance_1 = \
-    (util.south_one(froms) if board.to_move else util.north_one(froms)) \
-    & board.empty_BB & ~constants.rank_mask[2 if board.to_move else 7]
+    ((util.south_one(froms) if board.to_move else util.north_one(froms))
+    & board.empty_BB & ~constants.rank_mask[2 if board.to_move else 7])
   pawn_promotion = \
-    (util.south_one(froms) if board.to_move else util.north_one(froms)) \
-    & board.empty_BB & constants.rank_mask[2 if board.to_move else 7]
+    ((util.south_one(froms) if board.to_move else util.north_one(froms))
+    & board.empty_BB & constants.rank_mask[2 if board.to_move else 7])
   pawn_advance_2 = ( util.south_one(pawn_advance_1) if board.to_move 
       else util.north_one(pawn_advance_1) ) \
       & board.empty_BB \
@@ -79,12 +85,15 @@ def gen_pawn_moves(board):
 def gen_pawn_captures(board):
   move_list = []
   froms = board.piece_BB[PAWN] & board.piece_BB[board.to_move]
-  pawn_attacks_e = (util.so_ea_one(froms) if board.to_move 
-                  else util.no_ea_one(froms)) \
-                  & board.piece_BB[util.flip(board.to_move)]
-  pawn_attacks_w =(util.so_we_one(froms) if board.to_move
-                  else util.no_we_one(froms)) \
-                  & board.piece_BB[util.flip(board.to_move)]
+  if board.to_move:
+    pawn_attacks_e = util.so_ea_one(froms)
+    pawn_attacks_w = util.so_we_one(froms)
+  else:
+    pawn_attacks_e = util.no_ea_one(froms)
+    pawn_attacks_w = util.no_we_one(froms)
+  pawn_attacks_e &= board.piece_BB[util.flip(board.to_move)]
+  pawn_attacks_w &= board.piece_BB[util.flip(board.to_move)]
+
   to = pawn_attacks_e
   while (to):
     temp_to = util.bit_scan_forward(to)
@@ -104,64 +113,58 @@ def gen_pawn_captures(board):
     to = util.clear_least_bit(to)                                       
   return move_list
 
-def gen_knight_moves(board):
+def gen_knight_moves(board, moves, attacks):
   move_list = []
   knights = board.piece_BB[KNIGHT] 
   while knights:
     loc = util.bit_scan_forward(knights)
     knights ^= uint64(1) << loc
-    to = constants.all_knight_attacks[loc] & board.empty_BB
-    while (to):
-      move_list.append(
-        gen_move(util.bit_scan_forward(to), KNIGHT, loc, 0, 0))
-      to = util.clear_least_bit(to)
+    to = constants.all_knights_attack[loc]
+    if moves:
+      knight_moves_bb = to & board.empty_BB
+      move_list.extend(moves_from_bitboard(loc, knight_moves_bb, False, KNIGHT))
+    if attacks:
+      knight_attacks_bb = to & board.piece_BB[util.flip(board.to_move)]
+      move_list.extend(moves_from_bitboard(loc, knight_attacks_bb, True, KNIGHT))
   return move_list
 
-def gen_knight_captures(board):
-  move_list = []
-  knights = board.piece_BB[KNIGHT]
-  while knights:
-    loc = util.bit_scan_forward(knights)
-    knights ^= uint64(1) << loc
-    to = constants.all_knight_attacks[loc] \
-          & board.piece_BB[util.flip(board.to_move)]
-    while (to):
-      temp_to = util.bit_scan_forward(to)
-      move_list.append(
-        gen_move(temp_to, loc, KNIGHT - 2, board.piece_square[temp_to] - 2, 0))
-      to = util.clear_least_bit(to)
-  return move_list
-
-def gen_rook_moves(board):
+def gen_rook_moves(board, moves, attacks):
+  """Generate rook moves or attacks and return a list of pseudo-legal moves"""
   move_list = []
   rooks = board.piece_BB[ROOK] & board.piece_BB[board.to_move]
   while rooks:
+    #Find a rook, remove it from rooks
     sq = util.bit_scan_forward(rooks)
     rooks ^= uint64(1) << sq 
-    index = ((board.occupied_BB & occupancy_mask_rook[sq]) \
-    * magic_number_rook[sq]) \
-    >> magic_number_shifts_rook[sq]
-    to = rook_moves[sq][index] & ~board.occupied_BB
-    while (to):
-      temp_to = util.bit_scan_forward(to)
-      move_list.append(
-        gen_move(temp_to, sq, ROOK - 2, 0, 0))
-      to = util.clear_least_bit(to)
+    #Compute the hash (perfect hashing) of the rook and relevant occupancy bits:
+    #First mask the relevant bits (ranks/files and/or diagonals)
+    index = (((board.occupied_BB & occupancy_mask_rook[sq])
+    #Now multiply by a "magic number" to move the relevant bits together
+      * magic_number_rook[sq])
+    #Then shift the relevant bits to the first few bits
+      >> magic_number_shifts_rook[sq])
+    #Check the pre-computed table to get the moves
+    to = uint64(rook_moves[sq][index])
+    if moves:
+      current_rook_moves = to & ~board.occupied_BB
+      move_list.extend(moves_from_bitboard(sq, current_rook_moves, False, ROOK))
+    if attacks:
+      current_rook_attacks = to & board.piece_BB[util.flip(board.to_move)]
+      move_list.extend(moves_from_bitboard(sq, current_rook_attacks, True, ROOK))
   return move_list
 
-def gen_rook_attacks(board):
+def moves_from_bitboard(origin, bitboard, attacks, piece):
+  """Return a list of move objects from a bitboard of all pseudo-legal moves"""
   move_list = []
-  rooks = board.piece_BB[ROOK] & board.piece_BB[board.to_move]
-  while rooks:
-    sq = util.bit_scan_forward(rooks)
-    rooks ^= uint64(1) << sq 
-    index = ((board.occupied_BB & occupancy_mask_rook[sq]) \
-    * magic_number_rook[sq]) \
-    >> magic_number_shifts_rook[sq]
-    to = rook_moves[sq][index] & board.piece_BB[util.flip(board.to_move)]
-    while (to):
-      temp_to = util.bit_scan_forward(to)
+  while(bitboard):
+    temp_to = util.bit_scan_forward(bitboard)
+    if attacks: 
       move_list.append(
-        gen_move(temp_to, sq, ROOK - 2, board.piece_square[temp_to] - 2, 0))
-      to = util.clear_least_bit(to)
+        gen_move(temp_to, origin, piece - 2, board.piece_square[temp_to] - 2, 0)
+      )
+    else:
+      move_list.append(
+        gen_move(temp_to, origin, piece - 2, 0, 0)
+      )
+    bitboard = util.clear_least_bit(bitboard)
   return move_list
