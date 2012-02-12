@@ -34,6 +34,7 @@ class Player(object):
             raise ValueError("Could not parse input. Try again.")
 
     def get_move(self, board):
+        """Request a valid move from the player."""
         while True:
             try:
                 move = self._parse_move(raw_input("Please enter your move: "), board)

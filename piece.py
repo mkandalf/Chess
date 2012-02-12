@@ -12,6 +12,7 @@ class Piece(object):
 
     def get_location(self):
         return self.x, self.y
+
     def set_location(self, value):
         self.x, self.y = value
     location = property(get_location, set_location)
@@ -101,7 +102,6 @@ class Rook(Piece):
                     yield loc
                 break
             x += 1
-        
 
         x = self.x - 1
         while x >= 0:
