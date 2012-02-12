@@ -1,11 +1,8 @@
 import re
 
+from color import Color
 from move import Move
-
-
-class Color(object):
-    WHITE = 0
-    BLACK = 1
+from piece import Knight, Bishop, Rook, Queen, Pawn
 
 
 class Player(object):
@@ -25,15 +22,32 @@ class Player(object):
     def _parse_move(self, string, board):
         """Try to convert a string to move.
         Raises a ValueError if no move can be decoded."""
-        matches = re.search("([a-h][1-8]).*([a-h][1-8])", string)
-        if matches is not None:
-            start, end = matches.groups()
-            start_sq = self._parse_square(start)
-            piece = board.piece_at(start_sq)
-            to = self._parse_square(end)
-            return Move(piece, board.piece_at(to), start_sq, to)
+        tokens = string.strip().split()
+        if len(tokens) < 2:
+            raise ValueError("Please enter two squares.")
         else:
-            raise ValueError("Could not parse input. Try again.")
+            start_square = re.search("[a-h][1-8]", tokens[0])
+            end_square = re.search("[a-h][1-8]", tokens[1])
+            if start_square is None or end_square is None:
+                raise ValueError("Could not parse squares. Try again.")
+            else:
+                start = self._parse_square(start_square.group(0))
+                piece = board.piece_at(start)
+                to = self._parse_square(end_square.group(0))
+                promotion = None
+                if len(tokens) == 3 and type(piece) == Pawn:
+                    if tokens[2] in ("Queen", "Q"):
+                        promotion = Queen
+                    elif tokens[2] in ("Knight", "N"):
+                        promotion = Knight 
+                    elif tokens[2] in ("Bishop", "B"):
+                        promotion = Bishop
+                    elif tokens[2] in ("Rook", "R"):
+                        promotion = Rook
+                    else:
+                        raise ValueError("Could not parse promotion.")
+                return Move(piece, board.piece_at(to), \
+                        start, to, promotion)
 
     def get_move(self, board):
         """Request a valid move from the player."""

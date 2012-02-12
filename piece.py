@@ -1,6 +1,6 @@
 from itertools import product
 
-from player import Color
+from color import Color
 from move import Move
 
 
@@ -26,7 +26,7 @@ class Piece(object):
 
     def moves(self, board):
         """Get all the possible moves for the piece.
-        Moves are not guaranteed to be legal."""
+        Moves are guaranteed to be reachable, but not legal."""
         for square in self.reachable(board):
             yield Move(self, board.piece_at(square), (self.x, self.y), square)
 
@@ -34,36 +34,14 @@ class Piece(object):
         """Check if the given square is reachable."""
         return any(s == square for s in self.reachable(board))
 
+    def __eq__(self, other):
+        return self.owner == other.owner and self.location == other.location
+
+    def __ne__(self, other):
+        return not self == other
+
     def __repr__(self):
         return "%s %s" % (str(self), self.location)
-
-
-class Pawn(Piece):
-    def reachable(self, board):
-        if self.owner.color == Color.WHITE:
-            vector = 1
-            start_rank = 1
-        else:
-            vector = -1
-            start_rank = 6
-        forward_1 = self.x, self.y + vector
-        if not board.piece_at(forward_1):
-            yield forward_1
-            if self.y == start_rank:
-                forward_2 = self.x, self.y + vector * 2
-                if not board.piece_at(forward_2):
-                    yield forward_2
-        attack1 = self.x - 1, self.y + vector
-        piece = board.piece_at(attack1)
-        if piece is not None and piece.owner != self.owner:
-            yield attack1
-        attack2 = self.x + 1, self.y + vector
-        piece = board.piece_at(attack2)
-        if piece is not None and piece.owner != self.owner:
-            yield attack2
-
-    def __str__(self):
-        return "Pawn"
 
 
 class Knight(Piece):
@@ -165,3 +143,51 @@ class Queen(Piece):
 
     def __str__(self):
         return "Queen"
+
+
+class Pawn(Piece):
+    promotable = (Knight, Bishop, Rook, Queen)
+
+    @property
+    def promotion_rank(self):
+        return 7 if self.owner.color == Color.WHITE else 0
+
+    def moves(self, board):
+        """Get all the possible moves for the piece.
+        Moves are guaranteed to be reachable, but not legal."""
+        for square in self.reachable(board):
+            if square[1] == self.promotion_rank:
+                for piece in self.promotable:
+                    yield Move(self, board.piece_at(square), \
+                            self.location, square, piece)
+            else:
+                yield Move(self, board.piece_at(square), \
+                        self.location, square)
+
+    @property
+    def start_rank(self):
+        return 1 if self.owner.color == Color.WHITE else 6
+
+    @property
+    def _vector(self):
+        return 1 if self.owner.color == Color.WHITE else -1
+
+    def reachable(self, board):
+        forward_1 = self.x, self.y + self._vector
+        if not board.piece_at(forward_1):
+            yield forward_1
+            if self.y == self.start_rank:
+                forward_2 = self.x, self.y + self._vector * 2
+                if not board.piece_at(forward_2):
+                    yield forward_2
+        attack1 = self.x - 1, self.y + self._vector
+        piece = board.piece_at(attack1)
+        if piece is not None and piece.owner != self.owner:
+            yield attack1
+        attack2 = self.x + 1, self.y + self._vector
+        piece = board.piece_at(attack2)
+        if piece is not None and piece.owner != self.owner:
+            yield attack2
+
+    def __str__(self):
+        return "Pawn"

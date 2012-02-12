@@ -1,11 +1,11 @@
 import unittest
 
 from board import Board
+from color import Color
 from move import Move
-from piece import King, Knight, Rook, Bishop, Queen
-from player import Player, Color
+from player import Player
 from game import Game
-
+from piece import King, Knight, Rook, Bishop, Queen, Pawn
 
 class ChessTest(unittest.TestCase):
     def setUp(self):
@@ -44,6 +44,13 @@ class PlayerTest(ChessTest):
         self.board.pieces.add(king)
         expected = Move(king, None, (4, 4), (5, 5))
         got = self.white._parse_move('e5 f6', self.board)
+        self.assertEquals(got, expected)
+
+    def test_parse_move_promotion(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        expected = Move(pawn, None, (0, 6), (0, 7), Queen)
+        got = self.white._parse_move('a7 a8 Q', self.board)
         self.assertEquals(got, expected)
 
 
@@ -86,6 +93,65 @@ class MakeMoveTest(ChessTest):
         self.board.pieces.add(knight)
         self.board.make_move(Move(king, knight, (1, 1), (2, 2)))
         self.assertTrue(knight not in self.board.pieces)
+
+    def test_make_move_promotion_pawn_removed(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        self.board.make_move(Move(pawn, None, (0, 6), (0, 7), Queen))
+        self.assertTrue(pawn not in self.board.pieces)
+
+    def test_make_move_promotion_piece_added(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        self.board.make_move(Move(pawn, None, (0, 6), (0, 7), Queen))
+        for piece in self.board.pieces:
+            queen = piece
+            break
+        self.assertTrue(queen in self.board.pieces)
+
+    def test_make_move_promotion_queen_added(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        self.board.make_move(Move(pawn, None, (0, 6), (0, 7), Queen))
+        queen = self.board.pieces.pop()
+        self.assertEquals(queen, Queen(self.white, (0, 7)))
+
+
+class UndoMoveTest(ChessTest):
+    def test_make_move(self):
+        king = King(self.white, (1, 1))
+        self.board.pieces.add(king)
+        move = Move(king, None, (1, 1), (2, 2))
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertEquals(king.location, (1, 1))
+
+    def test_make_move_capture(self):
+        king = King(self.white, (1, 1))
+        knight = Knight(self.black, (2, 2))
+        self.board.pieces.add(king)
+        self.board.pieces.add(knight)
+        move = Move(king, knight, (1, 1), (2, 2))
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertTrue(knight in self.board.pieces)
+
+    def test_make_move_promotion_pawn_removed(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        move = Move(pawn, None, (0, 6), (0, 7), Queen)
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertTrue(any(piece == pawn for piece in self.board.pieces))
+
+    def test_make_move_promotion_piece_added(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        move = Move(pawn, None, (0, 6), (0, 7), Queen)
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertTrue(all(type(piece) != Queen for piece \
+                in self.board.pieces))
 
 
 class IsLegalTest(ChessTest):
@@ -187,6 +253,51 @@ class PieceAtTest(ChessTest):
         king = King(self.white, (0, 0))
         self.board.pieces.add(king)
         self.assertEquals(self.board.piece_at((0, 0)), king)
+
+
+class PawnTest(ChessTest):
+    def test_reachable_center(self):
+        pawn = Pawn(self.white, (4, 4))
+        reachable = list(pawn.reachable(self.board))
+        self.assertEquals(len(reachable), 1, reachable)
+
+    def test_reachable_start(self):
+        pawn = Pawn(self.white, (4, 1))
+        reachable = list(pawn.reachable(self.board))
+        self.assertEquals(len(reachable), 2, reachable)
+
+    def test_reachable_start_blocked(self):
+        pawn = Pawn(self.white, (4, 1))
+        bishop = Bishop(self.white, (4, 3))
+        self.board.pieces.add(bishop)
+        reachable = list(pawn.reachable(self.board))
+        self.assertEquals(len(reachable), 1, reachable)
+
+    def test_reachable_blocked_ally(self):
+        pawn = Pawn(self.white, (4, 4))
+        bishop = Bishop(self.white, (4, 5))
+        self.board.pieces.add(bishop)
+        reachable = list(pawn.reachable(self.board))
+        self.assertEquals(len(reachable), 0, reachable)
+
+    def test_reachable_blocked_enemy(self):
+        pawn = Pawn(self.white, (4, 4))
+        bishop = Bishop(self.black, (4, 5))
+        self.board.pieces.add(bishop)
+        reachable = list(pawn.reachable(self.board))
+        self.assertEquals(len(reachable), 0, reachable)
+
+    def test_reachable_captureable_enemy(self):
+        pawn = Pawn(self.white, (4, 4))
+        bishop = Bishop(self.black, (5, 5))
+        self.board.pieces.add(bishop)
+        reachable = list(pawn.reachable(self.board))
+        self.assertEquals(len(reachable), 2, reachable)
+
+    def test_promotions(self):
+        pawn = Pawn(self.white, (4, 6))
+        moves = list(pawn.moves(self.board))
+        self.assertEquals(len(moves), 4, moves)
 
 
 class KingTest(ChessTest):
