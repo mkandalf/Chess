@@ -34,16 +34,18 @@ class Board(object):
             self.pieces.remove(self.piece_at(move.to))
         move.piece.location = move.to
 
+    def undo_move(self, move):
+        """Apply the move in reverse to the board."""
+        move.piece.location = move.start
+        if move.captured is not None:
+            self.pieces.add(move.captured)
+
     def is_legal(self, move):
         """Check if a move is legal."""
         if move.piece.can_reach(self, move.to):
-            captured = self.piece_at(move.to)
-            start = move.piece.location
             self.make_move(move)
             in_check = self.in_check(move.piece.owner)
-            move.piece.location = start
-            if captured is not None:
-                self.pieces.add(captured)
+            self.undo_move(move)
             return not in_check
         else:
             return False

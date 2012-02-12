@@ -28,8 +28,10 @@ class Player(object):
         matches = re.search("([a-h][1-8]).*([a-h][1-8])", string)
         if matches is not None:
             start, end = matches.groups()
-            piece = board.piece_at(self._parse_square(start))
-            return Move(piece, self._parse_square(end))
+            start_sq = self._parse_square(start)
+            piece = board.piece_at(start_sq)
+            to = self._parse_square(end)
+            return Move(piece, board.piece_at(to), to, start_sq)
         else:
             raise ValueError("Could not parse input. Try again.")
 
