@@ -21,14 +21,14 @@ class PlayerTest(ChessTest):
         self.assertEquals((7, 7), self.white._parse_square('h8'))
 
     def test_parse_move_no_piece(self):
-        expected = Move(None, (7, 7))
+        expected = Move(None, None, (7, 7), (7, 6))
         got = self.white._parse_move('h7 h8', self.board)
         self.assertEquals(got, expected)
 
     def test_parse_move_piece(self):
         king = King(self.white, (4, 4))
         self.board.pieces.add(king)
-        expected = Move(king, (5, 5))
+        expected = Move(king, None, (5, 5), (4, 4))
         got = self.white._parse_move('e5 f6', self.board)
         self.assertEquals(got, expected)
 
@@ -62,7 +62,7 @@ class MakeMoveTest(ChessTest):
     def test_make_move(self):
         king = King(self.white, (1, 1))
         self.board.pieces.add(king)
-        self.board.make_move(Move(king, (2, 2)))
+        self.board.make_move(Move(king, None, (2, 2), (1, 1)))
         self.assertEquals(king.location, (2, 2))
 
     def test_make_move_capture(self):
@@ -70,7 +70,7 @@ class MakeMoveTest(ChessTest):
         knight = Knight(self.black, (2, 2))
         self.board.pieces.add(king)
         self.board.pieces.add(knight)
-        self.board.make_move(Move(king, (2, 2)))
+        self.board.make_move(Move(king, knight, (2, 2), (1, 1)))
         self.assertTrue(knight not in self.board.pieces)
 
 
@@ -78,13 +78,13 @@ class IsLegalTest(ChessTest):
     def test_reachable_not_check(self):
         king = King(self.white, (1, 1))
         self.board.pieces.add(king)
-        move = Move(king, (2, 2))
+        move = Move(king, None, (2, 2), (1, 1))
         self.assertTrue(self.board.is_legal(move))
 
     def test_not_reachable_not_check(self):
         king = King(self.white, (1, 1))
         self.board.pieces.add(king)
-        move = Move(king, (3, 3))
+        move = Move(king, None, (3, 3), (1, 1))
         self.assertFalse(self.board.is_legal(move))
 
     def test_reachable_is_check(self):
@@ -92,7 +92,7 @@ class IsLegalTest(ChessTest):
         knight = Knight(self.black, (0, 0))
         self.board.pieces.add(king)
         self.board.pieces.add(knight)
-        move = Move(king, (1, 2))
+        move = Move(king, None, (1, 2), (1, 1))
         self.assertFalse(self.board.is_legal(move))
 
 
