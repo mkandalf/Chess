@@ -56,19 +56,17 @@ class Board(object):
                     if self.is_legal(move):
                         yield move
 
+    def is_over(self, player):
+        """Check if the game is over for the given player."""
+        return len(list(self.moves(player)))
+
     def stalemated(self, player):
         """Check if the given player is stalemated."""
-        return len([_ for _ in self.moves(player)]) == 0 and \
-                not self.in_check(player)
+        return self.is_over(player) and not self.in_check(player)
 
     def checkmated(self, player):
         """Check if the given player is checkmated."""
-        return len([_ for _ in self.moves(player)]) == 0 and \
-                self.in_check(player)
-
-    def is_over(self, player):
-        """Check if the game is over for the given player."""
-        return self.checkmated(player) or self.stalemated(player)
+        return self.is_over(player) and self.in_check(player)
 
     def piece_at(self, location):
         """Get the piece at a given location or None if no piece is found."""
