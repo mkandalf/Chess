@@ -1,9 +1,10 @@
 import unittest
 
 from board import Board
+from color import Color
 from move import Move
 from piece import King, Knight, Rook, Bishop, Queen, Pawn
-from player import Player, Color
+from player import Player
 
 
 class ChessTest(unittest.TestCase):
@@ -30,6 +31,13 @@ class PlayerTest(ChessTest):
         self.board.pieces.add(king)
         expected = Move(king, None, (4, 4), (5, 5))
         got = self.white._parse_move('e5 f6', self.board)
+        self.assertEquals(got, expected)
+
+    def test_parse_move_promotion(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        expected = Move(pawn, None, (0, 6), (0, 7), Queen)
+        got = self.white._parse_move('a7 a8 Q', self.board)
         self.assertEquals(got, expected)
 
 

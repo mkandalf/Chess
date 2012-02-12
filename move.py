@@ -22,4 +22,5 @@ class Move(object):
         return "%s to %s from %s" % (str(self.piece), self.to, self.start)
 
     def __repr__(self):
-        return "%s to %s from %s" % (repr(self.piece), self.to, self.start)
+        return "%s from %s captures %s" \
+                % (repr(self.piece), self.start, self.captured)

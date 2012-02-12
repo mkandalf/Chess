@@ -1,6 +1,6 @@
 from itertools import product
 
-from player import Color
+from color import Color
 from move import Move
 
 
