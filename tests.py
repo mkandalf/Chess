@@ -83,7 +83,10 @@ class MakeMoveTest(ChessTest):
         pawn = Pawn(self.white, (0, 6))
         self.board.pieces.add(pawn)
         self.board.make_move(Move(pawn, None, (0, 6), (0, 7), Queen))
-        self.assertEquals(len(self.board.pieces), 1)
+        for piece in self.board.pieces:
+            queen = piece
+            break
+        self.assertTrue(queen in self.board.pieces)
 
     def test_make_move_promotion_queen_added(self):
         pawn = Pawn(self.white, (0, 6))
@@ -91,6 +94,43 @@ class MakeMoveTest(ChessTest):
         self.board.make_move(Move(pawn, None, (0, 6), (0, 7), Queen))
         queen = self.board.pieces.pop()
         self.assertEquals(queen, Queen(self.white, (0, 7)))
+
+
+class UndoMoveTest(ChessTest):
+    def test_make_move(self):
+        king = King(self.white, (1, 1))
+        self.board.pieces.add(king)
+        move = Move(king, None, (1, 1), (2, 2))
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertEquals(king.location, (1, 1))
+
+    def test_make_move_capture(self):
+        king = King(self.white, (1, 1))
+        knight = Knight(self.black, (2, 2))
+        self.board.pieces.add(king)
+        self.board.pieces.add(knight)
+        move = Move(king, knight, (1, 1), (2, 2))
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertTrue(knight in self.board.pieces)
+
+    def test_make_move_promotion_pawn_removed(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        move = Move(pawn, None, (0, 6), (0, 7), Queen)
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertTrue(any(piece == pawn for piece in self.board.pieces))
+
+    def test_make_move_promotion_piece_added(self):
+        pawn = Pawn(self.white, (0, 6))
+        self.board.pieces.add(pawn)
+        move = Move(pawn, None, (0, 6), (0, 7), Queen)
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertTrue(all(type(piece) != Queen for piece \
+                in self.board.pieces))
 
 
 class IsLegalTest(ChessTest):

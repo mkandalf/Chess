@@ -45,7 +45,11 @@ class Board(object):
             self.pieces.add(move.captured)
         if move.promotion is not None:
             pawn = Pawn(move.piece.owner, move.piece.location)
-            self.pieces.remove(move.piece)
+            promoted = move.promotion(move.piece.owner, move.piece.location)
+            for piece in self.pieces:
+                if piece == promoted:
+                    break
+            self.pieces.remove(piece)
             self.pieces.add(pawn)
 
     def is_legal(self, move):
