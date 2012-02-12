@@ -27,19 +27,29 @@ class Board(object):
                         return True
         return False
 
+    def make_move(self, move):
+        """Apply the given move to the board."""
+        # TODO: Promotion, castling
+        if self.piece_at(move.to):
+            self.pieces.remove(self.piece_at(move.to))
+        move.piece.location = move.to
+
     def is_legal(self, move):
         """Check if a move is legal."""
         if move.piece.can_reach(self, move.to):
-            pieces = self.pieces.copy()
+            captured = self.piece_at(move.to)
+            start = move.piece.location
             self.make_move(move)
             in_check = self.in_check(move.piece.owner)
-            self.pieces = pieces
+            move.piece.location = start
+            if captured is not None:
+                self.pieces.add(captured)
             return not in_check
         else:
             return False
 
     def moves(self, player):
-        """Get all the moves a player can make."""
+        """Get all the legal moves a player can make."""
         for piece in self.pieces:
             if piece.owner == player:
                 for move in piece.moves(self):
@@ -61,15 +71,8 @@ class Board(object):
         return self.checkmated(player) or self.stalemated(player)
 
     def piece_at(self, location):
-        """Get the piece at a given location or None if no piecei s found."""
+        """Get the piece at a given location or None if no piece is found."""
         for piece in self.pieces:
             if piece.location == location:
                 return piece
         return None
-
-    def make_move(self, move):
-        """Apply the given move to the board."""
-        # TODO: Promotion
-        if self.piece_at(move.to):
-            self.pieces.remove(self.piece_at(move.to))
-        move.piece.location = move.to

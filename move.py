@@ -12,4 +12,4 @@ class Move(object):
         return not self == other
 
     def __repr__(self):
-        return "%s-%s" % (repr(self.piece), self.to)
+        return "%s to %s" % (repr(self.piece), self.to)

@@ -35,7 +35,7 @@ class Piece(object):
         return any(s == square for s in self.reachable(board))
 
     def __repr__(self):
-        return "%s %s" % (self.__class__, self.location)
+        return "%s %s" % (str(self), self.location)
 
 
 class Pawn(Piece):

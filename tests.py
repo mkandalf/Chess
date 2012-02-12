@@ -48,6 +48,23 @@ class InCheckTest(ChessTest):
         self.board.pieces.add(Knight(self.black, (0, 0)))
         self.assertTrue(self.board.in_check(self.white))
 
+
+class MakeMoveTest(ChessTest):
+    def test_make_move(self):
+        king = King(self.white, (1, 1))
+        self.board.pieces.add(king)
+        self.board.make_move(Move(king, (2, 2)))
+        self.assertEquals(king.location, (2, 2))
+
+    def test_make_move_capture(self):
+        king = King(self.white, (1, 1))
+        knight = Knight(self.black, (2, 2))
+        self.board.pieces.add(king)
+        self.board.pieces.add(knight)
+        self.board.make_move(Move(king, (2, 2)))
+        self.assertTrue(knight not in self.board.pieces)
+
+
 class IsLegalTest(ChessTest):
     def test_reachable_not_check(self):
         king = King(self.white, (1, 1))
@@ -68,6 +85,17 @@ class IsLegalTest(ChessTest):
         self.board.pieces.add(knight)
         move = Move(king, (1, 2))
         self.assertFalse(self.board.is_legal(move))
+
+
+class MovesTest(ChessTest):
+    def test_simple(self):
+        king = King(self.white, (1, 1))
+        self.board.pieces.add(king)
+        piece_moves = set([m for m in king.moves(self.board)])
+        assert king.location == (1, 1), king.location
+        board_moves = set([m for m in self.board.moves(self.white)])
+        self.assertEquals(len(piece_moves), len(board_moves),
+                (piece_moves, board_moves))
 
 
 class KingTest(ChessTest):
