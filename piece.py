@@ -59,11 +59,17 @@ class Pawn(Piece):
         if piece is not None and piece.owner != self.owner:
             yield attack2
 
+    def __str__(self):
+        return "Pawn"
+
 
 class Bishop(Piece):
     def reachable(self, board):
         # TODO: Don't bs this
         yield self.x + 1, self.y + 1
+
+    def __str__(self):
+        return "Bishop"
 
 
 class Knight(Piece):
@@ -77,6 +83,9 @@ class Knight(Piece):
                 piece = board.piece_at(new_loc)
                 if piece is None or piece.owner != self.owner:
                     yield new_loc
+
+    def __str__(self):
+        return "Knight"
 
 
 class Rook(Piece):
@@ -130,6 +139,9 @@ class Rook(Piece):
                 break
             y += 1
 
+    def __str__(self):
+        return "Rook"
+
 
 class King(Piece):
     def reachable(self, board):
@@ -141,14 +153,19 @@ class King(Piece):
                     if piece is None or piece.owner != self.owner:
                         yield to
 
+    def __str__(self):
+        return "King"
+
 
 class Queen(Piece):
-  def reachable(self, board):
-    #TODO: Do this right
-    for x, y in product(range(-1, 2), range(-1, 2)):
-      if not (x == y == 0):
-        to = new_x, new_y = (self.x + x, self.y + y)
-        if 7 >= new_x >= 0 and 7 >= new_y >= 0:
-          piece = board.piece_at(to)
-          if piece is None or piece.owner != self.owner:
-            yield to
+    def reachable(self, board):
+        for x, y in product(range(-1, 2), range(-1, 2)):
+            if not (x == y == 0):
+                to = (self.x + x, self.y + y)
+                if board.on_board(to):
+                    piece = board.piece_at(to)
+                    if piece is None or piece.owner != self.owner:
+                        yield to
+
+    def __str__(self):
+        return "Queen"
