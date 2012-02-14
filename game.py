@@ -27,7 +27,7 @@ class Game(object):
                 if entry.isdigit():
                     column += int(entry)
                 else:
-                    sq = (column, row)
+                    sq = (column, 7-row)
                     player = self.players[entry.islower()]
                     entry = entry.lower()
                     if entry.lower() == "r":
@@ -49,12 +49,14 @@ class Game(object):
         """Play the game."""
         print "Starting game."
         print "Press CTRL+C to quit."
+        print self.board 
         while not self.is_over(self._current_player):
             print "%s's turn." % self._current_player
             move = self._current_player.get_move(self.board)
             print move
             self.board.make_move(move)
             self.ply += 1
+            print self.board 
         if self.board.is_checkmate(self._current_player):
             print "Checkmate."
         else:

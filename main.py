@@ -27,4 +27,5 @@ if __name__ == "__main__":
         pieces.add(Rook(player, (7, piece_rank)))
     board = Board(pieces)
     game = Game(board, players)
+    game.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1")
     game.play()

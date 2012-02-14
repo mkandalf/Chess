@@ -116,6 +116,15 @@ class King(Piece):
                     piece = board.piece_at(to)
                     if piece is None or piece.owner != self.owner:
                         yield to
+        #Castling moves aren't necessarily legal
+        if self.owner.castling[-1][0]:
+            if (board.piece_at((self.x - 1, self.y)) is None
+                and board.piece_at((self.x - 2, self.y)) is None):
+                yield (self.x - 2, self.y)
+        if self.owner.castling[-1][1]:
+            if (board.piece_at((self.x + 1, self.y)) is None
+                and board.piece_at((self.x + 2, self.y)) is None):
+                yield (self.x + 2, self.y)
 
     def __str__(self):
         return "King"

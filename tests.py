@@ -189,6 +189,7 @@ class MovesTest(ChessTest):
 
 class IsOverTest(ChessTest):
     def test_over(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (0, 0))
         rook1 = Rook(self.black, (8, 0))
         rook2 = Rook(self.black, (8, 1))
@@ -198,6 +199,7 @@ class IsOverTest(ChessTest):
         self.assertTrue(self.board.is_over(self.white))
 
     def test_not_over(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (0, 0))
         rook1 = Rook(self.black, (8, 0))
         self.board.pieces.add(king)
@@ -207,6 +209,7 @@ class IsOverTest(ChessTest):
 
 class StalemateTest(ChessTest):
     def test_not_stalemate(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (0, 0))
         rook1 = Rook(self.black, (8, 0))
         rook2 = Rook(self.black, (8, 1))
@@ -216,6 +219,7 @@ class StalemateTest(ChessTest):
         self.assertFalse(self.board.is_stalemate(self.white))
 
     def test_stalemate(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (0, 0))
         rook1 = Rook(self.black, (8, 1))
         rook2 = Rook(self.black, (1, 8))
@@ -227,6 +231,7 @@ class StalemateTest(ChessTest):
 
 class CheckmateTest(ChessTest):
     def test_not_checkmate(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (0, 0))
         rook1 = Rook(self.black, (8, 1))
         rook2 = Rook(self.black, (1, 8))
@@ -236,6 +241,7 @@ class CheckmateTest(ChessTest):
         self.assertFalse(self.board.is_checkmate(self.white))
 
     def test_not_over(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (0, 0))
         rook1 = Rook(self.black, (8, 0))
         rook2 = Rook(self.black, (8, 1))
@@ -302,35 +308,45 @@ class PawnTest(ChessTest):
 
 class KingTest(ChessTest):
     def test_reachable_center(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (4, 4))
+        self.board.pieces.add(king)
         reachable = list(king.reachable(self.board))
         self.assertEquals(len(reachable), 8, reachable)
 
     def test_reachable_blocked_ally(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (4, 4))
         knight = Knight(self.white, (3, 3))
+        self.board.pieces.add(king)
         self.board.pieces.add(knight)
         reachable = list(king.reachable(self.board))
         self.assertEquals(len(reachable), 7, reachable)
 
     def test_reachable_blocked_enemy(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (4, 4))
         knight = Knight(self.black, (3, 3))
+        self.board.pieces.add(king)
         self.board.pieces.add(knight)
         reachable = list(king.reachable(self.board))
         self.assertEquals(len(reachable), 8, reachable)
 
     def test_reachable_corner(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (0, 0))
+        self.board.pieces.add(king)
         reachable = list(king.reachable(self.board))
         self.assertEquals(len(reachable), 3, reachable)
 
     def test_can_reach_normal(self):
         king = King(self.white, (4, 4))
+        self.board.pieces.add(king)
         self.assertTrue(king.can_reach(self.board, (3, 3)))
 
     def test_cant_reach(self):
         king = King(self.white, (4, 4))
+        self.board.pieces.add(king)
         self.assertFalse(king.can_reach(self.board, (2, 2)))
 
 
