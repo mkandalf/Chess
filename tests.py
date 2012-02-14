@@ -178,6 +178,7 @@ class IsLegalTest(ChessTest):
 
 class MovesTest(ChessTest):
     def test_simple(self):
+        self.white.castling.append((False, False))
         king = King(self.white, (1, 1))
         self.board.pieces.add(king)
         piece_moves = set([m for m in king.moves(self.board)])
