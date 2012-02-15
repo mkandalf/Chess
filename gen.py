@@ -15,12 +15,10 @@ def gen_moves(board):
   constants.init()
   # King, Knight are simple
   gen_king_moves(board)
-  gen_knight_moves(board)
-  gen_knight_captures(board)
+  gen_knight_moves(board, True, True)
   # Pawns are also relatively easy, some bit shifting
   gen_pawn_moves(board) # Includes promotions
   gen_pawn_captures(board) # Should include capturing promotions
-  # Sliding pieces - magic bitboards and hashes
 
 def gen_move(p_to, p_from, piece, capture, promote):
   return uint64(((promote & 7) << 18) | ((capture & 7) << 15) \
@@ -114,6 +112,7 @@ def gen_pawn_captures(board):
   return move_list
 
 def gen_knight_moves(board, moves, attacks):
+  """Generate knight moves or attacks and return a list of pseudo-legal moves"""
   move_list = []
   knights = board.piece_BB[KNIGHT] 
   while knights:
@@ -122,38 +121,50 @@ def gen_knight_moves(board, moves, attacks):
     to = constants.all_knights_attack[loc]
     if moves:
       knight_moves_bb = to & board.empty_BB
-      move_list.extend(moves_from_bitboard(loc, knight_moves_bb, False, KNIGHT))
+      move_list.extend(bitboard_to_moves(loc, knight_moves_bb, False, KNIGHT))
     if attacks:
       knight_attacks_bb = to & board.piece_BB[util.flip(board.to_move)]
-      move_list.extend(moves_from_bitboard(loc, knight_attacks_bb, True, KNIGHT))
+      move_list.extend(bitboard_to_moves(loc, knight_attacks_bb, True, KNIGHT))
   return move_list
 
-def gen_rook_moves(board, moves, attacks):
+def gen_rook_moves(board, moves = True, attacks = True):
   """Generate rook moves or attacks and return a list of pseudo-legal moves"""
+  # 1. Pick a rook
+  # 2. Mask the relevant occupancy bits (ranks/files/diagonals)
+  # 3. Multiply by a magic number to move the relevant bits together
+  # 3. Shift the relevant bits to the beginning, removing the garbage bits
+  # 4. Use this as an index for the pre-computed move table
+  #
+  #    Example:
+  #    . . . . . . . .          D C B A 4 3 2 1
+  #    . . . . . . E .          . . . . . . . E 
+  #    . 1 . . . D . .          . . . . . . . .
+  #    . . 2 . C . . . * magic  . . . . . . . .  >> (64 - 9) = index
+  #    . . . * . . . . number = . . . . . . . . 
+  #    . . B . 3 . . .          . . . . . . . .
+  #    . A . . . 4 . .          . . . . . . . . 
+  #    . . . . . . . .          . . . . . . . .
+  #    Masked bits for          Now bits are 
+  #    bishop on d4             consecutive
+
   move_list = []
   rooks = board.piece_BB[ROOK] & board.piece_BB[board.to_move]
   while rooks:
-    #Find a rook, remove it from rooks
     sq = util.bit_scan_forward(rooks)
     rooks ^= uint64(1) << sq 
-    #Compute the hash (perfect hashing) of the rook and relevant occupancy bits:
-    #First mask the relevant bits (ranks/files and/or diagonals)
     index = (((board.occupied_BB & occupancy_mask_rook[sq])
-    #Now multiply by a "magic number" to move the relevant bits together
       * magic_number_rook[sq])
-    #Then shift the relevant bits to the first few bits
       >> magic_number_shifts_rook[sq])
-    #Check the pre-computed table to get the moves
     to = uint64(rook_moves[sq][index])
     if moves:
       current_rook_moves = to & ~board.occupied_BB
-      move_list.extend(moves_from_bitboard(sq, current_rook_moves, False, ROOK))
+      move_list.extend(bitboard_to_moves(sq, current_rook_moves, False, ROOK))
     if attacks:
       current_rook_attacks = to & board.piece_BB[util.flip(board.to_move)]
-      move_list.extend(moves_from_bitboard(sq, current_rook_attacks, True, ROOK))
+      move_list.extend(bitboard_to_moves(sq, current_rook_attacks, True, ROOK))
   return move_list
 
-def moves_from_bitboard(origin, bitboard, attacks, piece):
+def bitboard_to_moves(origin, bitboard, attacks, piece):
   """Return a list of move objects from a bitboard of all pseudo-legal moves"""
   move_list = []
   while(bitboard):
