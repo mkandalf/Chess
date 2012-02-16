@@ -136,6 +136,16 @@ class King(Piece):
                 and board.piece_at((self.x + 2, self.y)) is None):
                 yield (self.x + 2, self.y)
 
+    def moves(self, board):
+        """Get all the possible moves for the piece.
+        Moves are guaranteed to be reachable, but not legal."""
+        if board.in_check(self.owner):
+            for square in self.capturable(board):
+                yield Move(self, board.piece_at(square), (self.x, self.y), square)
+        else:
+            for square in self.reachable(board):
+                yield Move(self, board.piece_at(square), (self.x, self.y), square)
+
     def __str__(self):
         return "King"
 

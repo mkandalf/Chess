@@ -342,6 +342,16 @@ class KingTest(ChessTest):
         moves = list(game.board.moves(game.players[0]))
         self.assertEquals(len(moves), 17, moves)
 
+    def test_cant_castle_out_of_check(self):
+        king = King(self.white, (4, 0))
+        rook1 = Rook(self.white, (0, 0))
+        rook2 = Rook(self.black, (4, 7))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook1)
+        self.board.pieces.add(rook2)
+        moves = list(self.board.moves(self.white))
+        self.assertEquals(len(moves), 4, moves)
+
     def test_reachable_center(self):
         self.white.castling.append((False, False))
         king = King(self.white, (4, 4))
