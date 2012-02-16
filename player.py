@@ -1,4 +1,5 @@
 import re
+import random
 
 from color import Color
 from move import Move
@@ -51,6 +52,7 @@ class Player(object):
                         start, to, promotion)
 
     def get_move(self, board):
+        #return random.choice(list(board.moves(self)))
         """Request a valid move from the player."""
         while True:
             try:

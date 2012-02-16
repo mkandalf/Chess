@@ -308,6 +308,26 @@ class PawnTest(ChessTest):
 
 
 class KingTest(ChessTest):
+    def test_castle_kingside(self):
+        game = Game(Board())
+        game.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1") 
+        king = game.board.piece_at((4,0))
+        reachable = list(king.reachable(game.board))
+        self.assertEquals(len(reachable), 2, reachable)
+
+    def test_castle_queenside(self):
+        game = Game(Board())
+        game.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w KQkq - 0 1") 
+        king = game.board.piece_at((4,0))
+        reachable = list(king.reachable(game.board))
+        self.assertEquals(len(reachable), 2, reachable)
+
+    def test_castle_through_check(self):
+        game = Game(Board())
+        game.from_fen("rnbqk2r/ppppp2p/5Q2/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") 
+        moves = list(game.board.moves(game.players[0]))
+        self.assertEquals(len(moves), 17, moves)
+
     def test_reachable_center(self):
         self.white.castling.append((False, False))
         king = King(self.white, (4, 4))

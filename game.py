@@ -27,8 +27,8 @@ class Game(object):
                 if entry.isdigit():
                     column += int(entry)
                 else:
-                    sq = (column, 7-row)
-                    player = self.players[entry.islower()]
+                    sq = (column, 7 - row)
+                    player = self.players[not entry.islower()]
                     entry = entry.lower()
                     if entry.lower() == "r":
                         self.board.pieces.add(Rook(player, sq))

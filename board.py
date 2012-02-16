@@ -41,8 +41,7 @@ class Board(object):
                     break
         assert king is not None
         for piece in self.pieces:
-            #If you don't exclude the king, infinite loops!
-            if piece.owner != player and type(piece) != King:
+            if piece.owner != player:
                 for square in piece.reachable(self):
                     if square == king.location:
                         return True
@@ -54,24 +53,24 @@ class Board(object):
         if type(move.piece) == King:
             dy = move.to[0] - move.start[0]
             if abs(dy) == 2:
-                move.piece.owner.castling.append((False, False))
                 if dy == 2:
                     rook = self.piece_at((7, move.to[1]))
                     rook.location = (5, move.to[1])
                 else:
                     rook = self.piece_at((0, move.to[1]))
                     rook.location = (3, move.to[1])
-            else:
-                move.piece.owner.castling.append(move.piece.owner.castling[-1])
+            move.piece.owner.castling.append((False, False))
         #Remove castling rights on rook moves
         elif type(move.piece) == Rook:
             if move.start[0] == 0:
                 move.piece.owner.castling.append((False, move.piece.owner.castling[-1][1]))
             if move.start[0] == 7:
                 move.piece.owner.castling.append((move.piece.owner.castling[-1][0], False))
+            else:
+                move.piece.owner.castling.append(move.piece.owner.castling[-1])
         #Otherwise repeat the last set of castling rights
         else:
-            move.piece.owner.castling.append(move.piece.owner.castling[:-1])
+            move.piece.owner.castling.append(move.piece.owner.castling[-1])
         if self.piece_at(move.to):
             self.pieces.remove(self.piece_at(move.to))
         move.piece.location = move.to
@@ -107,6 +106,10 @@ class Board(object):
     def is_legal(self, move):
         """Check if a move is legal."""
         if move.piece.can_reach(self, move.to):
+            if type(move.piece) == King:
+                if abs(move.to[0] - move.start[0]) == 2: 
+                    if not self.is_castle_legal(move):
+                        return False
             self.make_move(move)
             in_check = self.in_check(move.piece.owner)
             self.undo_move(move)
@@ -120,23 +123,17 @@ class Board(object):
             if piece.owner == player:
                 for move in piece.moves(self):
                     if self.is_legal(move):
-                        if type(piece) == King:
-                            if abs(move.to[0] - move.start[0]) == 2: 
-                                if self.is_castle_legal(move):
-                                    yield move
-                            else:
-                                yield move 
-                        else:
-                            yield move
+                        yield move 
 
     def is_castle_legal(self, move):
         """Check if castling move is legal"""
         for piece in self.pieces:
             if piece.owner != move.piece.owner:
                 for square in piece.reachable(self):
-                    if square == (move.start[0] 
-                            + (move.start[0] - move.to[0]) / 2,
-                            move.to[1]):
+                    pass_through = (move.start[0] 
+                            + ((move.to[0] - move.start[0]) / 2),
+                            move.to[1])
+                    if square == pass_through:
                         return False
         return True
 
