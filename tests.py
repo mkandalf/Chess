@@ -7,6 +7,7 @@ from player import Player
 from game import Game
 from piece import King, Knight, Rook, Bishop, Queen, Pawn
 
+
 class ChessTest(unittest.TestCase):
     def setUp(self):
         self.board = Board(set())
@@ -18,14 +19,17 @@ class GameTest(unittest.TestCase):
     def setUp(self):
         self.game = Game(Board())
         self.game.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") 
+
     def test_ply(self):
         expected = 0
         got = self.game.ply
         self.assertEquals(got, expected) 
+
     def test_pieces(self):
         expected = "Knight"
         got = str(self.game.board.piece_at((1, 0)))
         self.assertEquals(got, expected)
+
 
 class PlayerTest(ChessTest):
     def test_parse_square_a1(self):
@@ -71,6 +75,16 @@ class OnBoardTest(ChessTest):
 class InCheckTest(ChessTest):
     def test_not_check(self):
         self.board.pieces.add(King(self.white, (4, 4)))
+        self.assertFalse(self.board.in_check(self.white))
+
+    def test_not_check_pawn(self):
+        self.board.pieces.add(King(self.white, (4, 4)))
+        self.board.pieces.add(Pawn(self.black, (4, 5)))
+        self.assertFalse(self.board.in_check(self.white))
+
+    def test_not_check_pawn_unmoved(self):
+        self.board.pieces.add(King(self.white, (4, 5)))
+        self.board.pieces.add(Pawn(self.black, (4, 7)))
         self.assertFalse(self.board.in_check(self.white))
 
     def test_in_check(self):

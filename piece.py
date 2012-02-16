@@ -18,11 +18,17 @@ class Piece(object):
     def location(self, value):
         self.x, self.y = value
 
-    def reachable(self, board):
+    def capturable(self, board):
         """Get all the square reachable from the piece's current location.
         Reachable moves are guarantted to be on the board,
         but not guaranteed to be legal."""
         raise NotImplemented
+
+    def reachable(self, board):
+        """Get all the square reachable from the piece's current location.
+        Reachable moves are guarantted to be on the board,
+        but not guaranteed to be legal."""
+        return self.capturable(board)
 
     def moves(self, board):
         """Get all the possible moves for the piece.
@@ -48,7 +54,7 @@ class Knight(Piece):
     _vectors = ((1, 2), (1, -2), (-1, 2), (-1, -2),
             (2, 1), (2, -1), (-2, 1), (-2, -1))
 
-    def reachable(self, board):
+    def capturable(self, board):
         for vector in self._vectors:
             x, y = vector
             new_loc = self.x + x, self.y + y
@@ -64,7 +70,7 @@ class Knight(Piece):
 class Bishop(Piece):
     _vectors = ((1, 1), (-1, 1), (-1, -1), (1, -1))
 
-    def reachable(self, board):
+    def capturable(self, board):
         for vector in self._vectors:
             u, v = vector
             x, y = self.x + u, self.y + v
@@ -87,7 +93,7 @@ class Bishop(Piece):
 class Rook(Piece):
     _vectors = ((1, 0), (0, 1), (-1, 0), (0, -1))
 
-    def reachable(self, board):
+    def capturable(self, board):
         for vector in self._vectors:
             u, v = vector
             x, y = self.x + u, self.y + v
@@ -108,7 +114,7 @@ class Rook(Piece):
 
 
 class King(Piece):
-    def reachable(self, board):
+    def capturable(self, board):
         for x, y in product(range(-1, 2), range(-1, 2)):
             if not (x == y == 0):
                 to = (self.x + x, self.y + y)
@@ -116,6 +122,10 @@ class King(Piece):
                     piece = board.piece_at(to)
                     if piece is None or piece.owner != self.owner:
                         yield to
+
+    def reachable(self, board):
+        for move in self.capturable(board):
+            yield move
         #Castling moves aren't necessarily legal
         if self.owner.castling[-1][0]:
             if (board.piece_at((self.x - 1, self.y)) is None
@@ -134,7 +144,7 @@ class Queen(Piece):
     _vectors = ((1, 0), (0, 1), (-1, 0), (0, -1),
             (1, 1), (-1, -1), (1, -1), (-1, 1))
 
-    def reachable(self, board):
+    def capturable(self, board):
         for vector in self._vectors:
             u, v = vector
             x, y = self.x + u, self.y + v
@@ -163,7 +173,7 @@ class Pawn(Piece):
 
     def moves(self, board):
         """Get all the possible moves for the piece.
-        Moves are guaranteed to be reachable, but not legal."""
+        Moves are guaranteed to be capturable, but not legal."""
         for square in self.reachable(board):
             if square[1] == self.promotion_rank:
                 for piece in self.promotable:
@@ -181,14 +191,7 @@ class Pawn(Piece):
     def _vector(self):
         return 1 if self.owner.color == Color.WHITE else -1
 
-    def reachable(self, board):
-        forward_1 = self.x, self.y + self._vector
-        if not board.piece_at(forward_1):
-            yield forward_1
-            if self.y == self.start_rank:
-                forward_2 = self.x, self.y + self._vector * 2
-                if not board.piece_at(forward_2):
-                    yield forward_2
+    def capturable(self, board):
         attack1 = self.x - 1, self.y + self._vector
         piece = board.piece_at(attack1)
         if piece is not None and piece.owner != self.owner:
@@ -197,6 +200,17 @@ class Pawn(Piece):
         piece = board.piece_at(attack2)
         if piece is not None and piece.owner != self.owner:
             yield attack2
+
+    def reachable(self, board):
+        for move in self.capturable(board):
+            yield move
+        forward_1 = self.x, self.y + self._vector
+        if not board.piece_at(forward_1):
+            yield forward_1
+            if self.y == self.start_rank:
+                forward_2 = self.x, self.y + self._vector * 2
+                if not board.piece_at(forward_2):
+                    yield forward_2
 
     def __str__(self):
         return "Pawn"

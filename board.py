@@ -6,26 +6,6 @@ class Board(object):
         self.pieces = pieces
         self.width = self.height = 8
 
-
-    def __str__(self):
-        a = [[" " for i in xrange(8)] for x in xrange(8)]
-        ret = ""
-        divide = "+-+-+-+-+-+-+-+-+\n"
-        for piece in self.pieces:
-            piece_str = str(piece)[0]
-            if str(piece) == "Knight":
-                piece_str = "N"
-            if piece.owner.color == Color.BLACK:
-                piece_str = piece_str.lower()
-            a[7-piece.location[1]][piece.location[0]] = piece_str
-        for row in a:
-            ret += divide
-            for sq in row:
-                if sq:
-                    ret +=  "|" + sq
-            ret += "|\n"
-        return ret + divide
-
     def on_board(self, loc):
         """Check if a location is on the board."""
         x, y = loc
@@ -42,7 +22,7 @@ class Board(object):
         assert king is not None
         for piece in self.pieces:
             if piece.owner != player:
-                for square in piece.reachable(self):
+                for square in piece.capturable(self):
                     if square == king.location:
                         return True
         return False
@@ -155,3 +135,23 @@ class Board(object):
             if piece.location == location:
                 return piece
         return None
+
+    def __str__(self):
+        a = [[" " for i in xrange(8)] for x in xrange(8)]
+        ret = ""
+        divide = "+-+-+-+-+-+-+-+-+\n"
+        for piece in self.pieces:
+            piece_str = str(piece)[0]
+            if str(piece) == "Knight":
+                piece_str = "N"
+            if piece.owner.color == Color.BLACK:
+                piece_str = piece_str.lower()
+            a[7-piece.location[1]][piece.location[0]] = piece_str
+        for row in a:
+            ret += divide
+            for sq in row:
+                if sq:
+                    ret +=  "|" + sq
+            ret += "|\n"
+        return ret + divide
+
