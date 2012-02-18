@@ -55,6 +55,10 @@ class Board(object):
         else:
             move.piece.owner.castling.append(move.piece.owner.castling[-1])
 
+        if type(move.piece) == Pawn:
+            pawn = move.piece
+            pawn.just_moved = (pawn.y == pawn.start_rank)
+
         if move.captured is not None:
             self.pieces.remove(move.captured)
         move.piece.location = move.to

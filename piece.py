@@ -155,6 +155,10 @@ class King(Piece):
 class Pawn(Piece):
     promotable = (Knight, Bishop, Rook, Queen)
 
+    def __init__(self, owner, location, just_moved=False):
+        super(Pawn, self).__init__(owner, location)
+        self.just_moved = just_moved
+
     @property
     def promotion_rank(self):
         return 7 if self.owner.color == Color.WHITE else 0
@@ -167,35 +171,39 @@ class Pawn(Piece):
     def _vector(self):
         return 1 if self.owner.color == Color.WHITE else -1
 
-    def capturable(self, board):
-        for dx in (-1, 1):
-            attack1 = self.x + dx, self.y + self._vector
-            piece = board.piece_at(attack1)
-            if piece is not None and piece.owner != self.owner:
-                yield attack1
-
-    def reachable(self, board):
-        for move in self.capturable(board):
-            yield move
-        forward_1 = self.x, self.y + self._vector
-        if not board.piece_at(forward_1):
-            yield forward_1
-            if self.y == self.start_rank:
-                forward_2 = self.x, self.y + self._vector * 2
-                if not board.piece_at(forward_2):
-                    yield forward_2
-
     def moves(self, board):
-        """Get all the possible moves for the piece.
-        Moves are guaranteed to be capturable, but not legal."""
-        for square in self.reachable(board):
+        for dx in (-1, 1):
+            square = self.x + dx, self.y + self._vector
+            piece = board.piece_at(square)
+            if piece is not None and piece.owner != self.owner:
+                if square[1] == self.promotion_rank:
+                    for promote in self.promotable:
+                        yield Move(self, self.location, square, \
+                                piece, promote)
+                else:
+                    yield Move(self, self.location, square, piece)
+
+            square = self.x + dx, self.y
+            piece = board.piece_at(square)
+            if type(piece) == Pawn and piece.owner != self.owner:
+                if piece.just_moved:
+                    yield Move(self, self.location, square, piece)
+
+        square = self.x, self.y + self._vector
+        if not board.piece_at(square):
             if square[1] == self.promotion_rank:
-                for piece in self.promotable:
-                    yield Move(self, self.location, square, \
-                            board.piece_at(square), piece)
+                for promote in self.promotable:
+                    yield Move(self, self.location, square, promote)
             else:
-                yield Move(self,  self.location, square, \
-                        board.piece_at(square))
+                yield Move(self, self.location, square, piece)
+            if self.y == self.start_rank:
+                square = self.x, self.y + self._vector * 2
+                if not board.piece_at(square):
+                    if square[1] == self.promotion_rank:
+                        for promote in self.promotable:
+                            yield Move(self, self.location, square, promote)
+                    else:
+                        yield Move(self, self.location, square, piece)
 
     def __str__(self):
         return "Pawn"

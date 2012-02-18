@@ -94,6 +94,15 @@ class InCheckTest(ChessTest):
 
 
 class MakeMoveTest(ChessTest):
+    def test_en_passant(self):
+        pawn1 = Pawn(self.white, (4, 4))
+        pawn2 = Pawn(self.black, (3, 6))
+        self.board.pieces.add(pawn1)
+        self.board.pieces.add(pawn2)
+        move = Move(pawn2, pawn2.location, (3, 4))
+        self.board.make_move(move)
+        self.assertTrue(pawn2.just_moved)
+
     def test_make_move(self):
         king = King(self.white, (1, 1))
         self.board.pieces.add(king)
@@ -277,6 +286,26 @@ class PieceAtTest(ChessTest):
 
 
 class PawnTest(ChessTest):
+    def test_en_passant(self):
+        pawn1 = Pawn(self.white, (4, 4))
+        pawn2 = Pawn(self.black, (3, 6))
+        self.board.pieces.add(pawn1)
+        self.board.pieces.add(pawn2)
+        move = Move(pawn2, pawn2.location, (3, 4))
+        self.board.make_move(move)
+        moves = [m for m in pawn1.moves(self.board)]
+        self.assertEqual(len(moves), 2)
+
+    def test_cant_en_passant(self):
+        pawn1 = Pawn(self.white, (4, 4))
+        pawn2 = Pawn(self.black, (3, 5))
+        self.board.pieces.add(pawn1)
+        self.board.pieces.add(pawn2)
+        move = Move(pawn2, pawn2.location, (3, 4))
+        self.board.make_move(move)
+        moves = [m for m in pawn1.moves(self.board)]
+        self.assertEqual(len(moves), 1)
+
     def test_moves_center(self):
         pawn = Pawn(self.white, (4, 4))
         moves = list(pawn.moves(self.board))
