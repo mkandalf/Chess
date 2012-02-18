@@ -8,7 +8,7 @@ class Piece(object):
     """Abstract base class for pieces."""
     def __init__(self, owner, location):
         self.owner = owner
-        self.location = location
+        self.x, self.y = location
 
     @property
     def location(self):
