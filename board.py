@@ -22,9 +22,9 @@ class Board(object):
                     break
         assert king is not None
         for piece in self.pieces:
-            if piece.owner != player:
-                for square in piece.capturable(self):
-                    if square == king.location:
+            if piece.owner != player and type(piece) != King:
+                for move in piece.moves(self):
+                    if move.to == king.location:
                         return True
         return False
 
