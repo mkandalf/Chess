@@ -54,9 +54,11 @@ class Board(object):
         #Otherwise repeat the last set of castling rights
         else:
             move.piece.owner.castling.append(move.piece.owner.castling[-1])
-        if self.piece_at(move.to):
-            self.pieces.remove(self.piece_at(move.to))
+
+        if move.captured is not None:
+            self.pieces.remove(move.captured)
         move.piece.location = move.to
+
         if move.promotion is not None:
             promoted = move.promotion(move.piece.owner, move.piece.location)
             self.pieces.remove(move.piece)

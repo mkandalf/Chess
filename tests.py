@@ -117,7 +117,7 @@ class MakeMoveTest(ChessTest):
     def test_make_move_promotion_piece_added(self):
         pawn = Pawn(self.white, (0, 6))
         self.board.pieces.add(pawn)
-        self.board.make_move(Move(pawn, (0, 6), (0, 7), Queen))
+        self.board.make_move(Move(pawn, (0, 6), (0, 7), None, Queen))
         for piece in self.board.pieces:
             queen = piece
             break
@@ -126,7 +126,7 @@ class MakeMoveTest(ChessTest):
     def test_make_move_promotion_queen_added(self):
         pawn = Pawn(self.white, (0, 6))
         self.board.pieces.add(pawn)
-        self.board.make_move(Move(pawn, (0, 6), (0, 7), Queen))
+        self.board.make_move(Move(pawn, (0, 6), (0, 7), None, Queen))
         queen = self.board.pieces.pop()
         self.assertEquals(queen, Queen(self.white, (0, 7)))
 
@@ -153,7 +153,7 @@ class UndoMoveTest(ChessTest):
     def test_make_move_promotion_pawn_removed(self):
         pawn = Pawn(self.white, (0, 6))
         self.board.pieces.add(pawn)
-        move = Move(pawn, (0, 6), (0, 7), Queen)
+        move = Move(pawn, (0, 6), (0, 7), None, Queen)
         self.board.make_move(move)
         self.board.undo_move(move)
         self.assertTrue(any(piece == pawn for piece in self.board.pieces))

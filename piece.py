@@ -38,7 +38,10 @@ class Piece(object):
 
     def can_reach(self, board, square):
         """Check if the given square is reachable."""
-        return any(s == square for s in self.reachable(board))
+        for move in self.moves(board):
+            if move.to == square:
+                return True
+        return False
 
     def __eq__(self, other):
         return self.owner == other.owner and self.location == other.location
@@ -54,14 +57,14 @@ class Knight(Piece):
     _vectors = ((1, 2), (1, -2), (-1, 2), (-1, -2),
             (2, 1), (2, -1), (-2, 1), (-2, -1))
 
-    def capturable(self, board):
+    def moves(self, board):
         for vector in self._vectors:
             x, y = vector
-            new_loc = self.x + x, self.y + y
-            if board.on_board(new_loc):
-                piece = board.piece_at(new_loc)
+            square = self.x + x, self.y + y
+            if board.on_board(square):
+                piece = board.piece_at(square)
                 if piece is None or piece.owner != self.owner:
-                    yield new_loc
+                    yield Move(self, self.location, square, piece)
 
     def __str__(self):
         return "Knight"
