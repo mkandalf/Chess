@@ -67,8 +67,9 @@ class Knight(Piece):
         return "Knight"
 
 
-class Bishop(Piece):
-    _vectors = ((1, 1), (-1, 1), (-1, -1), (1, -1))
+class VectorPiece(Piece):
+    """A piece that attacks along vectors."""
+    _vectors = []
 
     def capturable(self, board):
         for vector in self._vectors:
@@ -85,32 +86,28 @@ class Bishop(Piece):
                     break
                 x += u
                 y += v
+
+
+class Bishop(VectorPiece):
+    _vectors = ((1, 1), (-1, 1), (-1, -1), (1, -1))
 
     def __str__(self):
         return "Bishop"
 
 
-class Rook(Piece):
+class Rook(VectorPiece):
     _vectors = ((1, 0), (0, 1), (-1, 0), (0, -1))
-
-    def capturable(self, board):
-        for vector in self._vectors:
-            u, v = vector
-            x, y = self.x + u, self.y + v
-            while board.on_board((x, y)):
-                loc = (x, y)
-                piece = board.piece_at(loc)
-                if piece is None:
-                    yield loc
-                else:
-                    if piece.owner != self.owner:
-                        yield loc
-                    break
-                x += u
-                y += v
 
     def __str__(self):
         return "Rook"
+
+
+class Queen(VectorPiece):
+    _vectors = ((1, 0), (0, 1), (-1, 0), (0, -1),
+            (1, 1), (-1, -1), (1, -1), (-1, 1))
+
+    def __str__(self):
+        return "Queen"
 
 
 class King(Piece):
@@ -141,37 +138,15 @@ class King(Piece):
         Moves are guaranteed to be reachable, but not legal."""
         if board.in_check(self.owner):
             for square in self.capturable(board):
-                yield Move(self, (self.x, self.y), square, board.piece_at(square))
+                yield Move(self, (self.x, self.y), square, \
+                        board.piece_at(square))
         else:
             for square in self.reachable(board):
-                yield Move(self, (self.x, self.y), square, board.piece_at(square))
+                yield Move(self, (self.x, self.y), square, \
+                        board.piece_at(square))
 
     def __str__(self):
         return "King"
-
-
-class Queen(Piece):
-    _vectors = ((1, 0), (0, 1), (-1, 0), (0, -1),
-            (1, 1), (-1, -1), (1, -1), (-1, 1))
-
-    def capturable(self, board):
-        for vector in self._vectors:
-            u, v = vector
-            x, y = self.x + u, self.y + v
-            while board.on_board((x, y)):
-                loc = (x, y)
-                piece = board.piece_at(loc)
-                if piece is None:
-                    yield loc
-                else:
-                    if piece.owner != self.owner:
-                        yield loc
-                    break
-                x += u
-                y += v
-
-    def __str__(self):
-        return "Queen"
 
 
 class Pawn(Piece):
@@ -180,18 +155,6 @@ class Pawn(Piece):
     @property
     def promotion_rank(self):
         return 7 if self.owner.color == Color.WHITE else 0
-
-    def moves(self, board):
-        """Get all the possible moves for the piece.
-        Moves are guaranteed to be capturable, but not legal."""
-        for square in self.reachable(board):
-            if square[1] == self.promotion_rank:
-                for piece in self.promotable:
-                    yield Move(self, self.location, square, \
-                            board.piece_at(square), piece)
-            else:
-                yield Move(self,  self.location, square, \
-                        board.piece_at(square))
 
     @property
     def start_rank(self):
@@ -218,6 +181,18 @@ class Pawn(Piece):
                 forward_2 = self.x, self.y + self._vector * 2
                 if not board.piece_at(forward_2):
                     yield forward_2
+
+    def moves(self, board):
+        """Get all the possible moves for the piece.
+        Moves are guaranteed to be capturable, but not legal."""
+        for square in self.reachable(board):
+            if square[1] == self.promotion_rank:
+                for piece in self.promotable:
+                    yield Move(self, self.location, square, \
+                            board.piece_at(square), piece)
+            else:
+                yield Move(self,  self.location, square, \
+                        board.piece_at(square))
 
     def __str__(self):
         return "Pawn"
