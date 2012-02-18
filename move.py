@@ -1,10 +1,10 @@
 
 
 class Move(object):
-    def __init__(self, piece, captured, start, to, promotion=None):
-        self.to = to
-        self.start = start
+    def __init__(self, piece, start, to, captured=None, promotion=None):
         self.piece = piece
+        self.start = start
+        self.to = to
         self.captured = captured
         self.promotion = promotion
 

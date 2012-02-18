@@ -34,7 +34,7 @@ class Piece(object):
         """Get all the possible moves for the piece.
         Moves are guaranteed to be reachable, but not legal."""
         for square in self.reachable(board):
-            yield Move(self, board.piece_at(square), (self.x, self.y), square)
+            yield Move(self, (self.x, self.y), square, board.piece_at(square))
 
     def can_reach(self, board, square):
         """Check if the given square is reachable."""
@@ -141,10 +141,10 @@ class King(Piece):
         Moves are guaranteed to be reachable, but not legal."""
         if board.in_check(self.owner):
             for square in self.capturable(board):
-                yield Move(self, board.piece_at(square), (self.x, self.y), square)
+                yield Move(self, (self.x, self.y), square, board.piece_at(square))
         else:
             for square in self.reachable(board):
-                yield Move(self, board.piece_at(square), (self.x, self.y), square)
+                yield Move(self, (self.x, self.y), square, board.piece_at(square))
 
     def __str__(self):
         return "King"
@@ -187,11 +187,11 @@ class Pawn(Piece):
         for square in self.reachable(board):
             if square[1] == self.promotion_rank:
                 for piece in self.promotable:
-                    yield Move(self, board.piece_at(square), \
-                            self.location, square, piece)
+                    yield Move(self, self.location, square, \
+                            board.piece_at(square), piece)
             else:
-                yield Move(self, board.piece_at(square), \
-                        self.location, square)
+                yield Move(self,  self.location, square, \
+                        board.piece_at(square))
 
     @property
     def start_rank(self):
@@ -202,14 +202,11 @@ class Pawn(Piece):
         return 1 if self.owner.color == Color.WHITE else -1
 
     def capturable(self, board):
-        attack1 = self.x - 1, self.y + self._vector
-        piece = board.piece_at(attack1)
-        if piece is not None and piece.owner != self.owner:
-            yield attack1
-        attack2 = self.x + 1, self.y + self._vector
-        piece = board.piece_at(attack2)
-        if piece is not None and piece.owner != self.owner:
-            yield attack2
+        for dx in (-1, 1):
+            attack1 = self.x + dx, self.y + self._vector
+            piece = board.piece_at(attack1)
+            if piece is not None and piece.owner != self.owner:
+                yield attack1
 
     def reachable(self, board):
         for move in self.capturable(board):

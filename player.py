@@ -48,8 +48,7 @@ class Player(object):
                         promotion = Rook
                     else:
                         raise ValueError("Could not parse promotion.")
-                return Move(piece, board.piece_at(to), \
-                        start, to, promotion)
+                return Move(piece, start, to, board.piece_at(to), promotion)
 
     def get_move(self, board):
         #return random.choice(list(board.moves(self)))
