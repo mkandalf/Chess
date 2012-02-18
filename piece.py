@@ -74,7 +74,7 @@ class VectorPiece(Piece):
     """A piece that attacks along vectors."""
     _vectors = []
 
-    def capturable(self, board):
+    def moves(self, board):
         for vector in self._vectors:
             u, v = vector
             x, y = self.x + u, self.y + v
@@ -82,10 +82,10 @@ class VectorPiece(Piece):
                 loc = (x, y)
                 piece = board.piece_at(loc)
                 if piece is None:
-                    yield loc
+                    yield Move(self, self.location, loc, piece)
                 else:
                     if piece.owner != self.owner:
-                        yield loc
+                        yield Move(self, self.location, loc, piece)
                     break
                 x += u
                 y += v
