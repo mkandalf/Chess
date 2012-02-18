@@ -1,9 +1,10 @@
 from piece import King, Pawn, Rook
 from color import Color
 
+
 class Board(object):
-    def __init__(self, pieces = set()):
-        self.pieces = pieces
+    def __init__(self, pieces=None):
+        self.pieces = pieces or set()
         self.width = self.height = 8
 
     def on_board(self, loc):
@@ -43,9 +44,11 @@ class Board(object):
         #Remove castling rights on rook moves
         elif type(move.piece) == Rook:
             if move.start[0] == 0:
-                move.piece.owner.castling.append((False, move.piece.owner.castling[-1][1]))
+                move.piece.owner.castling.append(
+                        (False, move.piece.owner.castling[-1][1]))
             if move.start[0] == 7:
-                move.piece.owner.castling.append((move.piece.owner.castling[-1][0], False))
+                move.piece.owner.castling.append(
+                        (move.piece.owner.castling[-1][0], False))
             else:
                 move.piece.owner.castling.append(move.piece.owner.castling[-1])
         #Otherwise repeat the last set of castling rights
@@ -58,7 +61,7 @@ class Board(object):
             promoted = move.promotion(move.piece.owner, move.piece.location)
             self.pieces.remove(move.piece)
             self.pieces.add(promoted)
-    
+
     def undo_move(self, move):
         """Apply the move in reverse to the board."""
         move.piece.owner.castling.pop()
@@ -87,8 +90,8 @@ class Board(object):
         """Check if a move is legal."""
         if move.piece.can_reach(self, move.to):
             if type(move.piece) == King:
-                if abs(move.to[0] - move.start[0]) == 2: 
-                    if not self.is_castle_legal(move):
+                if abs(move.to[0] - move.start[0]) == 2:
+                    if not self._is_castle_legal(move):
                         return False
             self.make_move(move)
             in_check = self.in_check(move.piece.owner)
@@ -103,17 +106,17 @@ class Board(object):
             if piece.owner == player:
                 for move in piece.moves(self):
                     if self.is_legal(move):
-                        yield move 
+                        yield move
 
-    def is_castle_legal(self, move):
+    def _is_castle_legal(self, move):
         """Check if castling move is legal"""
         for piece in self.pieces:
             if piece.owner != move.piece.owner:
-                for square in piece.reachable(self):
-                    pass_through = (move.start[0] 
+                for move2 in piece.moves(self):
+                    pass_through = (move.start[0]
                             + ((move.to[0] - move.start[0]) / 2),
                             move.to[1])
-                    if square == pass_through:
+                    if move2.to == pass_through:
                         return False
         return True
 
@@ -146,12 +149,11 @@ class Board(object):
                 piece_str = "N"
             if piece.owner.color == Color.BLACK:
                 piece_str = piece_str.lower()
-            a[7-piece.location[1]][piece.location[0]] = piece_str
+            a[7 - piece.location[1]][piece.location[0]] = piece_str
         for row in a:
             ret += divide
             for sq in row:
                 if sq:
-                    ret +=  "|" + sq
+                    ret += "|" + sq
             ret += "|\n"
         return ret + divide
-
