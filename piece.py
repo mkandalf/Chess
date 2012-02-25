@@ -18,18 +18,6 @@ class Piece(object):
     def location(self, value):
         self.x, self.y = value
 
-    def capturable(self, board):
-        """Get all the square reachable from the piece's current location.
-        Reachable moves are guarantted to be on the board,
-        but not guaranteed to be legal."""
-        raise NotImplemented
-
-    def reachable(self, board):
-        """Get all the square reachable from the piece's current location.
-        Reachable moves are guarantted to be on the board,
-        but not guaranteed to be legal."""
-        return self.capturable(board)
-
     def moves(self, board):
         """Get all the possible moves for the piece.
         Moves are guaranteed to be reachable, but not legal."""
@@ -38,10 +26,7 @@ class Piece(object):
 
     def can_reach(self, board, square):
         """Check if the given square is reachable."""
-        for move in self.moves(board):
-            if move.to == square:
-                return True
-        return False
+        return any(move.to == square for move in self.moves(board))
 
     def __eq__(self, other):
         return self.owner == other.owner and self.location == other.location

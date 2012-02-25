@@ -13,14 +13,16 @@ class Board(object):
         return 0 <= x < self.width and 0 <= y < self.height
 
     def in_check(self, player):
-        """Check if the player is in check."""
+        """Check if the player is in check.
+        A player is in check if any piece owned by an opponent
+        can reach the player's King."""
         king = None
         for piece in self.pieces:
             if piece.owner == player:
                 if type(piece) == King:
                     king = piece
                     break
-        assert king is not None
+        assert king is not None, self.pieces
         for piece in self.pieces:
             if piece.owner != player and type(piece) != King:
                 for move in piece.moves(self):
@@ -93,7 +95,9 @@ class Board(object):
             self.pieces.add(pawn)
 
     def is_legal(self, move):
-        """Check if a move is legal."""
+        """Check if a move is legal.
+        A move is legal if a piece can reach it and moving would not place
+        the player in check."""
         if move.piece.can_reach(self, move.to):
             if type(move.piece) == King:
                 if abs(move.to[0] - move.start[0]) == 2:
@@ -127,15 +131,20 @@ class Board(object):
         return True
 
     def is_over(self, player):
-        """Check if the game is over for the given player."""
+        """Check if the game is over for the given player.
+        The game is over if a player cannot make any moves."""
         return len(list(self.moves(player))) == 0
 
     def is_stalemate(self, player):
-        """Check if the given player is stalemated."""
+        """Check if the given player is stalemated.
+        A player is stalemated if the game is over
+        and the player is not in check."""
         return self.is_over(player) and not self.in_check(player)
 
     def is_checkmate(self, player):
-        """Check if the given player is checkmated."""
+        """Check if the given player is checkmated.
+        A player is checkmated if the game is over
+        and the player is in check."""
         return self.is_over(player) and self.in_check(player)
 
     def piece_at(self, location):
