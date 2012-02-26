@@ -1,4 +1,3 @@
-from position import Position
 
 
 class Move(object):
@@ -8,22 +7,6 @@ class Move(object):
         self.to = to
         self.captured = captured
         self.promotion = promotion
-
-    def is_legal(self, board):
-        """Check if a move is legal.
-        A move is legal if
-        * a piece can reach the target square
-        * an allied piece is not on the target square
-        * moving would not place the owner in check."""
-        if self.piece.can_reach(board, self.to):
-            piece = board.piece_at(self.to)
-            if piece is None or piece.owner != self.piece.owner:
-                with Position(board, self) as position:
-                    return not position.in_check(self.piece.owner)
-            else:
-                return False
-        else:
-            return False
 
     def __eq__(self, other):
         return ((self.piece == other.piece)

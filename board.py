@@ -55,9 +55,11 @@ class Board(object):
             if abs(dy) == 2:
                 if dy == 2:
                     rook = self.piece_at((7, move.to[1]))
+                    assert rook is not None, (move.piece, self.pieces)
                     rook.location = (5, move.to[1])
                 else:
                     rook = self.piece_at((0, move.to[1]))
+                    assert rook is not None, (move.piece, self.pieces)
                     rook.location = (3, move.to[1])
             move.piece.owner.castling.append((False, False))
         #Remove castling rights on rook moves
@@ -89,7 +91,10 @@ class Board(object):
 
     def undo_move(self, move):
         """Apply the move in reverse to the board."""
+        # restore castling rights
         move.piece.owner.castling.pop()
+
+        # if move was a castle, restore rook position
         if type(move.piece) == King:
             dy = move.to[0] - move.start[0]
             if dy == 2:
@@ -99,6 +104,7 @@ class Board(object):
             elif dy == -2:
                 rook = self.piece_at((3, move.to[1]))
                 rook.location = (0, move.to[1])
+
         move.piece.location = move.start
         if move.captured is not None:
             self.pieces.add(move.captured)

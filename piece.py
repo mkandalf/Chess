@@ -32,9 +32,14 @@ class Piece(object):
             move = Move(self, self.location, square, piece)
             yield move
 
+    def reachable(self, board):
+        """Get all the squares this pice can reach."""
+        for move in self.moves(board):
+            yield move.to
+
     def can_reach(self, board, square):
         """Check if the given square is reachable."""
-        return self.can_attack(board, square)
+        return square in self.reachable(board)
 
     def __eq__(self, other):
         return self.owner == other.owner and self.location == other.location
@@ -123,12 +128,13 @@ class King(Piece):
             yield move
 
         #Castling moves aren't necessarily legal
-        if not board.in_check(self.owner):
-            if self.owner.castling[-1][0]:
-                if board.piece_at((self.x - 1, self.y) is None
-                    and board.piece_at((self.x - 2, self.y)) is None):
+        if not self.owner.is_in_check(board):
+            if self.owner.can_castle_queenside:
+                left1 = board.piece_at((self.x - 1, self.y))
+                left2 = board.piece_at((self.x - 2, self.y))
+                if left1 is None and left2 is None:
                     yield Move(self, self.location, (self.x - 2, self.y))
-            if self.owner.castling[-1][1]:
+            if self.owner.can_castle_kingside:
                 if (board.piece_at((self.x + 1, self.y)) is None
                     and board.piece_at((self.x + 2, self.y)) is None):
                     yield Move(self, self.location, (self.x + 2, self.y))
@@ -170,8 +176,7 @@ class Pawn(Piece):
                 for promote in self.promotable:
                     move = Move(self, self.location, square, \
                             piece, promote)
-                    if move.is_legal(board):
-                        yield move
+                    yield move
             else:
                 yield Move(self, self.location, square, piece)
 

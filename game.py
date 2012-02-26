@@ -1,5 +1,6 @@
-from player import Player, Color
 from piece import Pawn, Bishop, Knight, Rook, Queen, King
+from player import Player, Color
+from position import Position
 
 
 class Game(object):
@@ -14,11 +15,37 @@ class Game(object):
         """The player whose turn it is."""
         return self.players[self.ply % 2]
 
+    def is_legal(self, move):
+        """Check if a move is legal.
+        A move is legal if
+        * a piece can reach the target square
+        * an allied piece is not on the target square
+        * moving would not place the owner in check."""
+        if move.piece.can_reach(self.board, move.to):
+            piece = self.board.piece_at(move.to)
+            if piece is None or piece.owner != move.piece.owner:
+                # disallow castling through check
+                if type(move.piece) == King:
+                    dx = move.to[0] - move.start[0]
+                    if abs(dx) == 2:  # castle
+                        through = move.start[0] + dx / 2, move.to[1]
+                        if any(piece.can_attack(self.board, through)
+                                for piece in self.board.pieces
+                                if piece.owner != move.piece.owner):
+                            return False
+
+                with Position(self.board, move) as position:
+                    return not position.in_check(move.piece.owner)
+            else:
+                return False
+        else:
+            return False
+
     @property
     def is_over(self):
         """Check if the game is over for the given player.
         The game is over if a player cannot make any moves."""
-        return not any(move.is_legal(self.board)
+        return not any(self.is_legal(move)
                 for move in self.current_player.moves(self.board))
 
     def is_checkmate(self, player):

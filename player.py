@@ -11,6 +11,14 @@ class Player(object):
         self.color = color
         self.castling = [(True, True)]
 
+    @property
+    def can_castle_queenside(self):
+        return self.castling[-1][0]
+
+    @property
+    def can_castle_kingside(self):
+        return self.castling[-1][1]
+
     _SQUARE_LOOKUP = {'a': 0, 'b': 1, 'c': 2, 'd': 3,
             'e': 4, 'f': 5, 'g': 6, 'h': 7}
 
@@ -66,8 +74,7 @@ class Player(object):
         """Get all the moves a player can make."""
         for piece in self.pieces(board):
             for move in piece.moves(board):
-                if move.is_legal(board):
-                    yield move
+                yield move
 
     def is_in_check(self, board):
         """Check if the player is in check.
@@ -77,7 +84,7 @@ class Player(object):
                 for piece in board.pieces if piece.owner != self)
 
     def get_move(self, board):
-        return random.choice(list(board.moves(self)))
+        return random.choice(list(self.moves(board)))
         """Request a valid move from the player."""
         while True:
             try:
