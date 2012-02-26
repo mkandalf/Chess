@@ -106,6 +106,12 @@ class Board(object):
             self.pieces.remove(piece)
             self.pieces.add(pawn)
 
+    def __eq__(self, other):
+        return self.pieces == other.pieces
+
+    def __ne__(self, other):
+        return not (self == other)
+
     def __str__(self):
         a = [[" " for i in xrange(8)] for x in xrange(8)]
         ret = ""

@@ -76,22 +76,22 @@ class OnBoardTest(ChessTest):
 class InCheckTest(ChessTest):
     def test_not_check(self):
         self.board.pieces.add(King(self.white, (4, 4)))
-        self.assertFalse(self.board.in_check(self.white))
+        self.assertFalse(self.white.is_in_check(self.board))
 
     def test_not_check_pawn(self):
         self.board.pieces.add(King(self.white, (4, 4)))
         self.board.pieces.add(Pawn(self.black, (4, 5)))
-        self.assertFalse(self.board.in_check(self.white))
+        self.assertFalse(self.white.is_in_check(self.board))
 
     def test_not_check_pawn_unmoved(self):
         self.board.pieces.add(King(self.white, (4, 5)))
         self.board.pieces.add(Pawn(self.black, (4, 7)))
-        self.assertFalse(self.board.in_check(self.white))
+        self.assertFalse(self.white.is_in_check(self.board))
 
-    def test_in_check(self):
+    def test_is_in_check(self):
         self.board.pieces.add(King(self.white, (1, 2)))
         self.board.pieces.add(Knight(self.black, (0, 0)))
-        self.assertTrue(self.board.in_check(self.white))
+        self.assertTrue(self.white.is_in_check(self.board))
 
 
 class MakeMoveTest(ChessTest):
@@ -142,6 +142,7 @@ class MakeMoveTest(ChessTest):
 
 
 class UndoMoveTest(ChessTest):
+
     def test_make_move(self):
         king = King(self.white, (1, 1))
         self.board.pieces.add(king)
@@ -176,6 +177,17 @@ class UndoMoveTest(ChessTest):
         self.board.undo_move(move)
         self.assertTrue(all(type(piece) != Queen for piece \
                 in self.board.pieces))
+
+    def test_en_passant(self):
+        pawn1 = Pawn(self.white, (4, 4))
+        pawn2 = Pawn(self.black, (3, 6))
+        self.board.pieces.add(pawn1)
+        self.board.pieces.add(pawn2)
+        move = Move(pawn2, pawn2.location, (3, 4))
+        pieces = set(self.board.pieces)
+        self.board.make_move(move)
+        self.board.undo_move(move)
+        self.assertEquals(pieces, self.board.pieces)
 
 
 class IsLegalTest(ChessTest):
