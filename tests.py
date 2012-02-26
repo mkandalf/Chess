@@ -13,6 +13,7 @@ class ChessTest(unittest.TestCase):
         self.board = Board(set())
         self.white = Player(Color.WHITE)
         self.black = Player(Color.BLACK)
+        self.game = Game(self.board, (self.white, self.black))
 
 
 class GameTest(unittest.TestCase):
@@ -59,17 +60,17 @@ class PlayerTest(ChessTest):
 
 
 class OnBoardTest(ChessTest):
-    def test_on_board_center(self):
-        self.assertTrue(self.board.on_board((4, 4)))
+    def test_is_on_board_center(self):
+        self.assertTrue(self.board.is_on_board((4, 4)))
 
-    def test_on_board_corner1(self):
-        self.assertTrue(self.board.on_board((0, 0)))
+    def test_is_on_board_corner1(self):
+        self.assertTrue(self.board.is_on_board((0, 0)))
 
-    def test_on_board_corner2(self):
-        self.assertTrue(self.board.on_board((7, 7)))
+    def test_is_on_board_corner2(self):
+        self.assertTrue(self.board.is_on_board((7, 7)))
 
     def test_off_board(self):
-        self.assertFalse(self.board.on_board((8, 8)))
+        self.assertFalse(self.board.is_on_board((8, 8)))
 
 
 class InCheckTest(ChessTest):
@@ -182,13 +183,13 @@ class IsLegalTest(ChessTest):
         king = King(self.white, (1, 1))
         self.board.pieces.add(king)
         move = Move(king, (1, 1), (2, 2))
-        self.assertTrue(self.board.is_legal(move))
+        self.assertTrue(move.is_legal(self.board))
 
     def test_not_moves_not_check(self):
         king = King(self.white, (1, 1))
         self.board.pieces.add(king)
         move = Move(king, (1, 1), (3, 3))
-        self.assertFalse(self.board.is_legal(move))
+        self.assertFalse(move.is_legal(self.board))
 
     def test_moves_is_check(self):
         king = King(self.white, (1, 1))
@@ -196,7 +197,7 @@ class IsLegalTest(ChessTest):
         self.board.pieces.add(king)
         self.board.pieces.add(knight)
         move = Move(king, (1, 1), (1, 2))
-        self.assertFalse(self.board.is_legal(move))
+        self.assertFalse(move.is_legal(self.board))
 
 
 class MovesTest(ChessTest):
@@ -206,7 +207,7 @@ class MovesTest(ChessTest):
         self.board.pieces.add(king)
         piece_moves = set([m for m in king.moves(self.board)])
         assert king.location == (1, 1), king.location
-        board_moves = set([m for m in self.board.moves(self.white)])
+        board_moves = set([m for m in self.white.moves(self.board)])
         self.assertEquals(len(piece_moves), len(board_moves),
                 (piece_moves, board_moves))
 
@@ -220,7 +221,7 @@ class IsOverTest(ChessTest):
         self.board.pieces.add(king)
         self.board.pieces.add(rook1)
         self.board.pieces.add(rook2)
-        self.assertTrue(self.board.is_over(self.white))
+        self.assertTrue(self.game.is_over)
 
     def test_not_over(self):
         self.white.castling.append((False, False))
@@ -228,7 +229,7 @@ class IsOverTest(ChessTest):
         rook1 = Rook(self.black, (8, 0))
         self.board.pieces.add(king)
         self.board.pieces.add(rook1)
-        self.assertFalse(self.board.is_over(self.white))
+        self.assertFalse(self.game.is_over)
 
 
 class StalemateTest(ChessTest):
@@ -240,7 +241,7 @@ class StalemateTest(ChessTest):
         self.board.pieces.add(king)
         self.board.pieces.add(rook1)
         self.board.pieces.add(rook2)
-        self.assertFalse(self.board.is_stalemate(self.white))
+        self.assertFalse(self.game.is_stalemate(self.white))
 
     def test_stalemate(self):
         self.white.castling.append((False, False))
@@ -250,7 +251,7 @@ class StalemateTest(ChessTest):
         self.board.pieces.add(king)
         self.board.pieces.add(rook1)
         self.board.pieces.add(rook2)
-        self.assertTrue(self.board.is_stalemate(self.white))
+        self.assertTrue(self.game.is_stalemate(self.white))
 
 
 class CheckmateTest(ChessTest):
@@ -262,7 +263,7 @@ class CheckmateTest(ChessTest):
         self.board.pieces.add(king)
         self.board.pieces.add(rook1)
         self.board.pieces.add(rook2)
-        self.assertFalse(self.board.is_checkmate(self.white))
+        self.assertFalse(self.game.is_checkmate(self.white))
 
     def test_not_over(self):
         self.white.castling.append((False, False))
@@ -272,7 +273,7 @@ class CheckmateTest(ChessTest):
         self.board.pieces.add(king)
         self.board.pieces.add(rook1)
         self.board.pieces.add(rook2)
-        self.assertTrue(self.board.is_checkmate(self.white))
+        self.assertTrue(self.game.is_checkmate(self.white))
 
 
 class PieceAtTest(ChessTest):
@@ -306,6 +307,17 @@ class PawnTest(ChessTest):
         moves = [m for m in pawn1.moves(self.board)]
         self.assertEqual(len(moves), 1)
 
+    def test_bad_capture(self):
+        pawn1 = Pawn(self.white, (4, 1))
+        pawn2 = Pawn(self.white, (5, 1))
+        king1 = King(self.white, (5, 0))
+        king2 = King(self.black, (5, 7))
+        self.board.pieces.add(pawn1)
+        self.board.pieces.add(pawn2)
+        self.board.pieces.add(king1)
+        self.board.pieces.add(king2)
+        self.assertTrue([move.captured is None for move in self.white.moves(self.board)])
+
     def test_moves_center(self):
         pawn = Pawn(self.white, (4, 4))
         moves = list(pawn.moves(self.board))
@@ -338,8 +350,11 @@ class PawnTest(ChessTest):
         self.assertEquals(len(moves), 0, moves)
 
     def test_moves_captureable_enemy(self):
+        king = King(self.white, (0, 4))
         pawn = Pawn(self.white, (4, 4))
         bishop = Bishop(self.black, (5, 5))
+        self.board.pieces.add(king)
+        self.board.pieces.add(pawn)
         self.board.pieces.add(bishop)
         moves = list(pawn.moves(self.board))
         self.assertEquals(len(moves), 2, moves)
@@ -352,24 +367,30 @@ class PawnTest(ChessTest):
 
 class KingTest(ChessTest):
     def test_castle_kingside(self):
-        game = Game(Board())
-        game.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1") 
-        king = game.board.piece_at((4,0))
-        moves = list(king.moves(game.board))
-        self.assertEquals(len(moves), 2, moves)
+        king = King(self.white, (4, 0))
+        rook = Rook(self.white, (7, 0))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook)
+        moves = list(king.moves(self.board))
+        self.assertEquals(len(moves), 6, moves)
 
     def test_castle_queenside(self):
-        game = Game(Board())
-        game.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w KQkq - 0 1") 
-        king = game.board.piece_at((4,0))
-        moves = list(king.moves(game.board))
-        self.assertEquals(len(moves), 2, moves)
+        king = King(self.white, (4, 0))
+        rook = Rook(self.white, (0, 0))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook)
+        moves = list(king.moves(self.board))
+        self.assertEquals(len(moves), 6, moves)
 
     def test_castle_through_check(self):
-        game = Game(Board())
-        game.from_fen("rnbqk2r/ppppp2p/5Q2/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") 
-        moves = list(game.board.moves(game.players[0]))
-        self.assertEquals(len(moves), 17, moves)
+        king = King(self.white, (4, 0))
+        rook = Rook(self.white, (0, 0))
+        knight = Knight(self.black, (2, 2))
+        self.board.pieces.add(king)
+        self.board.pieces.add(rook)
+        self.board.pieces.add(knight)
+        moves = list(self.white.moves(self.board))
+        self.assertEquals(len(moves), 3 + 7 + 3, moves)
 
     def test_cant_castle_out_of_check(self):
         king = King(self.white, (4, 0))
@@ -378,7 +399,7 @@ class KingTest(ChessTest):
         self.board.pieces.add(king)
         self.board.pieces.add(rook1)
         self.board.pieces.add(rook2)
-        moves = list(self.board.moves(self.white))
+        moves = list(self.white.moves(self.board))
         self.assertEquals(len(moves), 4, moves)
 
     def test_moves_center(self):
@@ -456,22 +477,26 @@ class KnightTest(ChessTest):
 
 class RookTest(ChessTest):
     def test_moves_center(self):
+        king = King(self.white, (3, 3))
         rook = Rook(self.white, (4, 4))
+        self.board.pieces.add(king)
         self.board.pieces.add(rook)
         moves = list(rook.moves(self.board))
         self.assertEquals(len(moves), 14, moves)
 
     def test_moves_corner(self):
+        king = King(self.white, (3, 3))
         rook = Rook(self.white, (0, 0))
+        self.board.pieces.add(king)
         self.board.pieces.add(rook)
         moves = list(rook.moves(self.board))
         self.assertEquals(len(moves), 14, moves)
 
     def test_moves_blocked_ally(self):
         rook = Rook(self.white, (0, 0))
-        knight = Knight(self.white, (0, 1))
+        king = King(self.white, (0, 1))
         self.board.pieces.add(rook)
-        self.board.pieces.add(knight)
+        self.board.pieces.add(king)
         moves = list(rook.moves(self.board))
         self.assertEquals(len(moves), 7, moves)
 

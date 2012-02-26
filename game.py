@@ -1,20 +1,37 @@
 from player import Player, Color
 from piece import Pawn, Bishop, Knight, Rook, Queen, King
 
+
 class Game(object):
-    def __init__(self, board, players=(Player(Color.BLACK), Player(Color.WHITE))):
+    def __init__(self, board,
+            players=(Player(Color.WHITE), Player(Color.BLACK))):
         self.ply = 0
         self.board = board
         self.players = players
 
     @property
-    def _current_player(self):
+    def current_player(self):
         """The player whose turn it is."""
         return self.players[self.ply % 2]
 
-    def is_over(self, player):
-        """Check if the game is over."""
-        return self.board.is_over(player)
+    @property
+    def is_over(self):
+        """Check if the game is over for the given player.
+        The game is over if a player cannot make any moves."""
+        return not any(move.is_legal(self.board)
+                for move in self.current_player.moves(self.board))
+
+    def is_checkmate(self, player):
+        """Check if the given player is checkmated.
+        A player is checkmated if the game is over
+        and the player is in check."""
+        return self.is_over and player.is_in_check(self.board)
+
+    def is_stalemate(self, player):
+        """Check if the given player is stalemated.
+        A player is stalemated if the game is over
+        and the player is not in check."""
+        return self.is_over and not player.is_in_check(self.board)
 
     def from_fen(self, fen):
         """Reset game to match given FEN string"""
@@ -49,15 +66,16 @@ class Game(object):
         """Play the game."""
         print "Starting game."
         print "Press CTRL+C to quit."
-        print self.board 
-        while not self.is_over(self._current_player):
-            print "%s's turn." % self._current_player
-            move = self._current_player.get_move(self.board)
+        print self.board
+        while not self.is_over:
+            print "%s's turn." % self.current_player
+            move = self.current_player.get_move(self.board)
             print move
-            self.board.make_move(move)
-            self.ply += 1
-            print self.board 
-        if self.board.is_checkmate(self._current_player):
+            if move.is_legal(self.board):
+                self.board.make_move(move)
+                self.ply += 1
+            print self.board
+        if self.is_checkmate(self.current_player):
             print "Checkmate."
         else:
             print "Stalemate"

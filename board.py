@@ -5,9 +5,16 @@ from color import Color
 class Board(object):
     def __init__(self, pieces=None):
         self.pieces = pieces or set()
-        self.width = self.height = 8
 
-    def on_board(self, loc):
+    @property
+    def width(self):
+        return 8
+
+    @property
+    def height(self):
+        return 8
+
+    def is_on_board(self, loc):
         """Check if a location is on the board."""
         x, y = loc
         return 0 <= x < self.width and 0 <= y < self.height
@@ -23,12 +30,22 @@ class Board(object):
                     king = piece
                     break
         assert king is not None, self.pieces
+        return any(piece.can_attack(self, king.location)
+                for piece in self.pieces if piece.owner != king.owner)
+
+    def piece_at(self, location):
+        """Get the piece at a given location or None if no piece is found."""
         for piece in self.pieces:
-            if piece.owner != player and type(piece) != King:
-                for move in piece.moves(self):
-                    if move.to == king.location:
-                        return True
-        return False
+            if piece.location == location:
+                return piece
+        return None
+
+    def is_ally_at(self, location, player):
+        piece = self.piece_at(location)
+        if piece is None:
+            return False
+        else:
+            return (piece.owner == player)
 
     def make_move(self, move):
         """Apply the given move to the board."""
@@ -93,66 +110,6 @@ class Board(object):
                     break
             self.pieces.remove(piece)
             self.pieces.add(pawn)
-
-    def is_legal(self, move):
-        """Check if a move is legal.
-        A move is legal if a piece can reach it and moving would not place
-        the player in check."""
-        if move.piece.can_reach(self, move.to):
-            if type(move.piece) == King:
-                if abs(move.to[0] - move.start[0]) == 2:
-                    if not self._is_castle_legal(move):
-                        return False
-            self.make_move(move)
-            in_check = self.in_check(move.piece.owner)
-            self.undo_move(move)
-            return not in_check
-        else:
-            return False
-
-    def moves(self, player):
-        """Get all the legal moves a player can make."""
-        for piece in self.pieces:
-            if piece.owner == player:
-                for move in piece.moves(self):
-                    if self.is_legal(move):
-                        yield move
-
-    def _is_castle_legal(self, move):
-        """Check if castling move is legal"""
-        for piece in self.pieces:
-            if piece.owner != move.piece.owner:
-                for move2 in piece.moves(self):
-                    pass_through = (move.start[0]
-                            + ((move.to[0] - move.start[0]) / 2),
-                            move.to[1])
-                    if move2.to == pass_through:
-                        return False
-        return True
-
-    def is_over(self, player):
-        """Check if the game is over for the given player.
-        The game is over if a player cannot make any moves."""
-        return len(list(self.moves(player))) == 0
-
-    def is_stalemate(self, player):
-        """Check if the given player is stalemated.
-        A player is stalemated if the game is over
-        and the player is not in check."""
-        return self.is_over(player) and not self.in_check(player)
-
-    def is_checkmate(self, player):
-        """Check if the given player is checkmated.
-        A player is checkmated if the game is over
-        and the player is in check."""
-        return self.is_over(player) and self.in_check(player)
-
-    def piece_at(self, location):
-        """Get the piece at a given location or None if no piece is found."""
-        for piece in self.pieces:
-            if piece.location == location:
-                return piece
-        return None
 
     def __str__(self):
         a = [[" " for i in xrange(8)] for x in xrange(8)]

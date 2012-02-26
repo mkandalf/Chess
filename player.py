@@ -3,7 +3,7 @@ import random
 
 from color import Color
 from move import Move
-from piece import Knight, Bishop, Rook, Queen, Pawn
+from piece import Knight, Bishop, Rook, Queen, Pawn, King
 
 
 class Player(object):
@@ -50,8 +50,34 @@ class Player(object):
                         raise ValueError("Could not parse promotion.")
                 return Move(piece, start, to, board.piece_at(to), promotion)
 
+    def pieces(self, board):
+        """Get all pieces owned by the player."""
+        for piece in board.pieces:
+            if piece.owner == self:
+                yield piece
+
+    def king(self, board):
+        for piece in self.pieces(board):
+            if type(piece) == King:
+                return piece
+        assert False, self.pieces(board)
+    
+    def moves(self, board):
+        """Get all the moves a player can make."""
+        for piece in self.pieces(board):
+            for move in piece.moves(board):
+                if move.is_legal(board):
+                    yield move
+
+    def is_in_check(self, board):
+        """Check if the player is in check.
+        A player is in check if any piece owned by an opponent
+        can reach the player's King."""
+        return any(piece.can_attack(board, self.king(board).location)
+                for piece in board.pieces if piece.owner != self)
+
     def get_move(self, board):
-        #return random.choice(list(board.moves(self)))
+        return random.choice(list(board.moves(self)))
         """Request a valid move from the player."""
         while True:
             try:
@@ -64,8 +90,6 @@ class Player(object):
                     print "No piece found."
                 elif move.piece.owner != self:
                     print "You do not own that piece."
-                elif not board.is_legal(move):
-                    print "Illegal move"
                 else:
                     return move
 
