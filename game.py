@@ -35,7 +35,7 @@ class Game(object):
                             return False
 
                 with Position(self.board, move) as position:
-                    return not position.in_check(move.piece.owner)
+                    return not move.piece.owner.is_in_check(position)
             else:
                 return False
         else:
@@ -98,10 +98,12 @@ class Game(object):
             print "%s's turn." % self.current_player
             move = self.current_player.get_move(self.board)
             print move
-            if move.is_legal(self.board):
+            if self.is_legal(move):
                 self.board.make_move(move)
                 self.ply += 1
-            print self.board
+                print self.board
+            else:
+                print "Illegal move."
         if self.is_checkmate(self.current_player):
             print "Checkmate."
         else:

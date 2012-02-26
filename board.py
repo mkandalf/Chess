@@ -19,20 +19,6 @@ class Board(object):
         x, y = loc
         return 0 <= x < self.width and 0 <= y < self.height
 
-    def in_check(self, player):
-        """Check if the player is in check.
-        A player is in check if any piece owned by an opponent
-        can reach the player's King."""
-        king = None
-        for piece in self.pieces:
-            if piece.owner == player:
-                if type(piece) == King:
-                    king = piece
-                    break
-        assert king is not None, self.pieces
-        return any(piece.can_attack(self, king.location)
-                for piece in self.pieces if piece.owner != king.owner)
-
     def piece_at(self, location):
         """Get the piece at a given location or None if no piece is found."""
         for piece in self.pieces:
@@ -81,11 +67,13 @@ class Board(object):
             pawn.just_moved = (pawn.y == pawn.start_rank)
 
         if move.captured is not None:
+            assert move.captured in self.pieces, (move.captured, self.pieces)
             self.pieces.remove(move.captured)
         move.piece.location = move.to
 
         if move.promotion is not None:
             promoted = move.promotion(move.piece.owner, move.piece.location)
+            assert move.piece in self.pieces, (move.piece, self.pieces)
             self.pieces.remove(move.piece)
             self.pieces.add(promoted)
 
@@ -108,6 +96,7 @@ class Board(object):
         move.piece.location = move.start
         if move.captured is not None:
             self.pieces.add(move.captured)
+
         if move.promotion is not None:
             pawn = Pawn(move.piece.owner, move.piece.location)
             promoted = move.promotion(move.piece.owner, move.piece.location)
