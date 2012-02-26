@@ -6,9 +6,13 @@ from position import Position
 class Game(object):
     def __init__(self, board,
             players=(Player(Color.WHITE), Player(Color.BLACK))):
-        self.ply = 0
+        self.moves = []
         self.board = board
         self.players = players
+
+    @property
+    def ply(self):
+        return len(self.moves)
 
     @property
     def current_player(self):
@@ -100,7 +104,7 @@ class Game(object):
             print move
             if self.is_legal(move):
                 self.board.make_move(move)
-                self.ply += 1
+                self.moves.append(move)
                 print self.board
             else:
                 print "Illegal move."
