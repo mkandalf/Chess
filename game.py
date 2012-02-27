@@ -19,6 +19,85 @@ class Game(object):
         """The player whose turn it is."""
         return self.players[self.ply % 2]
 
+    def make_move(self, move):
+        """Apply the given move to the board."""
+        #Handle castling
+        if type(move.piece) == King:
+            dy = move.to[0] - move.start[0]
+            if abs(dy) == 2:
+                if dy == 2:
+                    rook = self.board.piece_at((7, move.to[1]))
+                    assert rook is not None, (move.piece, self.board.pieces)
+                    rook.location = (5, move.to[1])
+                else:
+                    rook = self.board.piece_at((0, move.to[1]))
+                    assert rook is not None, (move.piece, self.board.pieces)
+                    rook.location = (3, move.to[1])
+            move.piece.owner.castling.append((False, False))
+        #Remove castling rights on rook moves
+        elif type(move.piece) == Rook:
+            if move.start[0] == 0:
+                move.piece.owner.castling.append(
+                        (False, move.piece.owner.castling[-1][1]))
+            if move.start[0] == 7:
+                move.piece.owner.castling.append(
+                        (move.piece.owner.castling[-1][0], False))
+            else:
+                move.piece.owner.castling.append(move.piece.owner.castling[-1])
+        #Otherwise repeat the last set of castling rights
+        else:
+            move.piece.owner.castling.append(move.piece.owner.castling[-1])
+
+        if type(move.piece) == Pawn:
+            pawn = move.piece
+            pawn.just_moved = (pawn.y == pawn.start_rank)
+
+        if move.captured is not None:
+            assert move.captured in self.board.pieces, \
+                    (move.captured, self.board.pieces)
+            self.board.pieces.remove(move.captured)
+        move.piece.location = move.to
+
+        if move.promotion is not None:
+            promoted = move.promotion(move.piece.owner, move.piece.location)
+            assert move.piece in self.board.pieces, \
+                    (move.piece, self.board.pieces)
+            self.board.pieces.remove(move.piece)
+            self.board.pieces.add(promoted)
+
+        self.moves.append(move)
+
+    def undo_move(self):
+        """Apply the move in reverse to the board."""
+        # restore castling rights
+        move = self.moves.pop()
+
+        move.piece.owner.castling.pop()
+
+        # if move was a castle, restore rook position
+        if type(move.piece) == King:
+            dy = move.to[0] - move.start[0]
+            if dy == 2:
+                rook = self.board.piece_at((5, move.to[1]))
+                rook.location = (7, move.to[1])
+                print rook.location
+            elif dy == -2:
+                rook = self.board.piece_at((3, move.to[1]))
+                rook.location = (0, move.to[1])
+
+        move.piece.location = move.start
+        if move.captured is not None:
+            self.board.pieces.add(move.captured)
+
+        if move.promotion is not None:
+            pawn = Pawn(move.piece.owner, move.piece.location)
+            promoted = move.promotion(move.piece.owner, move.piece.location)
+            for piece in self.board.pieces:
+                if piece == promoted:
+                    break
+            self.board.pieces.remove(piece)
+            self.board.pieces.add(pawn)
+
     def is_legal(self, move):
         """Check if a move is legal.
         A move is legal if
@@ -38,7 +117,7 @@ class Game(object):
                                 if piece.owner != move.piece.owner):
                             return False
 
-                with Position(self.board, move) as position:
+                with Position(self, move) as position:
                     return not move.piece.owner.is_in_check(position)
             else:
                 return False
@@ -91,7 +170,7 @@ class Game(object):
                     elif entry.lower() == "p":
                         self.board.pieces.add(Pawn(player, sq))
                     column += 1
-        self.ply = int(components[1] == "b") + int(components[5]) - 1
+        # self.ply = int(components[1] == "b") + int(components[5]) - 1
 
     def play(self):
         """Play the game."""
@@ -103,8 +182,7 @@ class Game(object):
             move = self.current_player.get_move(self.board)
             print move
             if self.is_legal(move):
-                self.board.make_move(move)
-                self.moves.append(move)
+                self.make_move(move)
                 print self.board
             else:
                 print "Illegal move."
