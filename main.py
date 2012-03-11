@@ -2,11 +2,11 @@ from board import Board
 from color import Color
 from game import Game
 from piece import Pawn, Bishop, Knight, Rook, Queen, King
-from player import Player
+from player import Human, CPU
 
 
 if __name__ == "__main__":
-    players = (Player(Color.WHITE), Player(Color.BLACK))
+    players = (CPU(Color.WHITE), Human(Color.BLACK))
     pieces = set()
     for player in players:
         if player.color == Color.WHITE:
