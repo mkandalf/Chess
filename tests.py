@@ -141,6 +141,24 @@ class MakeMoveTest(ChessTest):
         queen = self.board.pieces.pop()
         self.assertEquals(queen, Queen(self.white, (0, 7)))
 
+    def test_promotion_by_capture_pawn_is_removed(self):
+        pawn = Pawn(self.white, (0, 6))
+        queen = Queen(self.black, (1, 7))
+        self.board.pieces.add(pawn)
+        self.board.pieces.add(queen)
+        move = Move(pawn, (0, 6), (1, 7), queen, Queen)
+        self.game.make_move(move)
+        self.assertFalse(pawn in self.board.pieces)
+
+    def test_promotion_by_capture_captured_is_removed(self):
+        pawn = Pawn(self.white, (0, 6))
+        queen = Queen(self.black, (1, 7))
+        self.board.pieces.add(pawn)
+        self.board.pieces.add(queen)
+        move = Move(pawn, (0, 6), (1, 7), queen, Queen)
+        self.game.make_move(move)
+        self.assertFalse(queen in self.board.pieces)
+
 
 class UndoMoveTest(ChessTest):
 
@@ -168,7 +186,7 @@ class UndoMoveTest(ChessTest):
         move = Move(pawn, (0, 6), (0, 7), None, Queen)
         self.game.make_move(move)
         self.game.undo_move()
-        self.assertTrue(any(piece == pawn for piece in self.board.pieces))
+        self.assertTrue(pawn in self.board.pieces)
 
     def test_make_move_promotion_piece_added(self):
         pawn = Pawn(self.white, (0, 6))
@@ -178,6 +196,26 @@ class UndoMoveTest(ChessTest):
         self.game.undo_move()
         self.assertTrue(all(type(piece) != Queen for piece \
                 in self.board.pieces))
+
+    def test_promotion_by_capture_pawn_is_restored(self):
+        pawn = Pawn(self.white, (0, 6))
+        queen = Queen(self.black, (1, 7))
+        self.board.pieces.add(pawn)
+        self.board.pieces.add(queen)
+        move = Move(pawn, (0, 6), (1, 7), queen, Queen)
+        self.game.make_move(move)
+        self.game.undo_move()
+        self.assertTrue(move.piece in self.board.pieces)
+
+    def test_promotion_by_capture_captured_is_restored(self):
+        pawn = Pawn(self.white, (0, 6))
+        queen = Queen(self.black, (1, 7))
+        self.board.pieces.add(pawn)
+        self.board.pieces.add(queen)
+        move = Move(pawn, (0, 6), (1, 7), queen, Queen)
+        self.game.make_move(move)
+        self.game.undo_move()
+        self.assertTrue(move.captured in self.board.pieces)
 
     def test_en_passant(self):
         pawn1 = Pawn(self.white, (4, 4))

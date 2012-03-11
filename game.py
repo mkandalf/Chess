@@ -53,15 +53,13 @@ class Game(object):
             pawn.just_moved = (pawn.y == pawn.start_rank)
 
         if move.captured is not None:
-            assert move.captured in self.board.pieces, \
-                    (move.captured, self.board.pieces)
+            assert move.captured in self.board.pieces
             self.board.pieces.remove(move.captured)
         move.piece.location = move.to
 
         if move.promotion is not None:
             promoted = move.promotion(move.piece.owner, move.piece.location)
-            assert move.piece in self.board.pieces, \
-                    (move.piece, self.board.pieces)
+            assert move.piece in self.board.pieces
             self.board.pieces.remove(move.piece)
             self.board.pieces.add(promoted)
 
@@ -90,13 +88,13 @@ class Game(object):
             self.board.pieces.add(move.captured)
 
         if move.promotion is not None:
-            pawn = Pawn(move.piece.owner, move.piece.location)
-            promoted = move.promotion(move.piece.owner, move.piece.location)
+            promoted = move.promotion(move.piece.owner, move.to)
+            assert any(piece == promoted for piece in self.board.pieces), (promoted, self.board.pieces)
             for piece in self.board.pieces:
                 if piece == promoted:
                     break
             self.board.pieces.remove(piece)
-            self.board.pieces.add(pawn)
+            self.board.pieces.add(move.piece)
 
     def is_legal(self, move):
         """Check if a move is legal.
