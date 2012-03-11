@@ -53,7 +53,7 @@ class Game(object):
             pawn.just_moved = (pawn.y == pawn.start_rank)
 
         if move.captured is not None:
-            assert move.captured in self.board.pieces
+            assert move.captured in self.board.pieces, move
             self.board.pieces.remove(move.captured)
         move.piece.location = move.to
 
@@ -83,17 +83,21 @@ class Game(object):
                 rook = self.board.piece_at((3, move.to[1]))
                 rook.location = (0, move.to[1])
 
+        # restore piece location
         move.piece.location = move.start
+        # restore captured piece
         if move.captured is not None:
             self.board.pieces.add(move.captured)
 
+        # remove promoted piece
+        # restore promoting pawn
         if move.promotion is not None:
             promoted = move.promotion(move.piece.owner, move.to)
             assert any(piece == promoted for piece in self.board.pieces), (promoted, self.board.pieces)
             for piece in self.board.pieces:
                 if piece == promoted:
+                    self.board.pieces.remove(piece)
                     break
-            self.board.pieces.remove(piece)
             self.board.pieces.add(move.piece)
 
     def is_legal(self, move):

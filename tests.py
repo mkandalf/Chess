@@ -418,6 +418,25 @@ class PawnTest(ChessTest):
         moves = list(pawn.moves(self.board))
         self.assertEquals(len(moves), 4, moves)
 
+    def test_promotions_are_valid(self):
+        pawn = Pawn(self.white, (4, 6))
+        moves = list(pawn.moves(self.board))
+        self.assertTrue(all(move.promotion is not None for move in moves))
+
+    def test_promotions_with_capturable(self):
+        pawn = Pawn(self.white, (4, 6))
+        rook = Rook(self.black, (3, 7))
+        self.board.pieces = set([pawn, rook])
+        moves = list(pawn.moves(self.board))
+        self.assertTrue(len(moves), 8)
+
+    def test_promotions_are_valid_with_capturable(self):
+        pawn = Pawn(self.white, (4, 6))
+        rook = Rook(self.black, (3, 7))
+        self.board.pieces = set([pawn, rook])
+        moves = list(pawn.moves(self.board))
+        self.assertTrue(all(move.promotion is not None for move in moves))
+
 
 class KingTest(ChessTest):
     def test_castle(self):

@@ -193,7 +193,7 @@ class Pawn(Piece):
         if not board.piece_at(square):
             if square[1] == self.promotion_rank:
                 for promote in self.promotable:
-                    yield Move(self, self.location, square, promote)
+                    yield Move(self, self.location, square, None, promote)
             else:
                 yield Move(self, self.location, square)
 
