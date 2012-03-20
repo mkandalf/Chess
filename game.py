@@ -36,7 +36,7 @@ class Game(object):
             if move.start[0] == 0:
                 move.piece.owner.castling.append(
                         (False, move.piece.owner.castling[-1][1]))
-            if move.start[0] == 7:
+            elif move.start[0] == 7:
                 move.piece.owner.castling.append(
                         (move.piece.owner.castling[-1][0], False))
             else:
@@ -77,7 +77,6 @@ class Game(object):
             if dy == 2:
                 rook = self.board.piece_at((5, move.to[1]))
                 rook.location = (7, move.to[1])
-                print rook.location
             elif dy == -2:
                 rook = self.board.piece_at((3, move.to[1]))
                 rook.location = (0, move.to[1])
@@ -125,16 +124,11 @@ class Game(object):
             return False
 
     @property
-    def cant_mate(self):
-        return len(self.board.pieces) == 2
-
-    @property
     def is_over(self):
         """Check if the game is over for the given player.
         The game is over if a player cannot make any moves."""
         return not any(self.is_legal(move)
-                for move in self.current_player.moves(self.board)) \
-                or self.cant_mate
+                for move in self.current_player.moves(self.board))
 
     def is_checkmate(self, player):
         """Check if the given player is checkmated.
