@@ -1,12 +1,13 @@
+import sys
+
 from board import Board
 from color import Color
 from game import Game
 from piece import Pawn, Bishop, Knight, Rook, Queen, King
 from player import Human, CPU
 
-
-if __name__ == "__main__":
-    players = (CPU(Color.WHITE), Human(Color.BLACK))
+def main():
+    players = (CPU(Color.WHITE), CPU(Color.BLACK))
     pieces = set()
     for player in players:
         if player.color == Color.WHITE:
@@ -28,3 +29,8 @@ if __name__ == "__main__":
     board = Board(pieces)
     game = Game(board, players)
     game.play()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
