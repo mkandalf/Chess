@@ -41,13 +41,18 @@ class PerftTest(ChessTest):
         self.black = Player(Color.BLACK)
         self.game = Game(self.board, (self.white, self.black))
         self.game.from_fen(\
-                "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w KQkq - 0 1")
+                "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+        self.game.ply = 0
 
     def test_perft1(self):
-        self.assertEquals(8902, self.game.perft(3))
+        self.assertEquals(8902, self.game.perft(1))
 
     def test_perft3_captures(self):
         self.assertEquals(0, self.game.perft_captures(1))
+
+    def test_divide(self):
+        self.game.divide(1)
+        self.assertTrue()
 
 
 class ParseMoveTest(unittest.TestCase):

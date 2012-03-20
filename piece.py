@@ -198,10 +198,10 @@ class Pawn(Piece):
                 yield Move(self, self.location, square)
 
         # forward2
-        if self.y == self.start_rank:
-            square = self.x, self.y + self._vector * 2
-            if not board.piece_at(square):
-                yield Move(self, self.location, square)
+            if self.y == self.start_rank:
+                square = self.x, self.y + self._vector * 2
+                if not board.piece_at(square):
+                    yield Move(self, self.location, square)
 
     def __str__(self):
         return "Pawn"

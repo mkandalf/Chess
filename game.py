@@ -9,10 +9,7 @@ class Game(object):
         self.moves = []
         self.board = board
         self.players = players
-
-    @property
-    def ply(self):
-        return len(self.moves)
+        self.ply = 0
 
     @property
     def current_player(self):
@@ -64,11 +61,13 @@ class Game(object):
             self.board.pieces.add(promoted)
 
         self.moves.append(move)
+        self.ply += 1
 
     def undo_move(self):
         """Apply the move in reverse to the board."""
         # restore castling rights
         move = self.moves.pop()
+        self.ply -= 1
 
         move.piece.owner.castling.pop()
 
@@ -99,7 +98,6 @@ class Game(object):
                     self.board.pieces.remove(piece)
                     break
             self.board.pieces.add(move.piece)
-
     def is_legal(self, move):
         """Check if a move is legal.
         A move is legal if
@@ -157,7 +155,7 @@ class Game(object):
                     column += int(entry)
                 else:
                     sq = (column, 7 - row)
-                    player = self.players[not entry.islower()]
+                    player = self.players[entry.islower()]
                     entry = entry.lower()
                     if entry.lower() == "r":
                         self.board.pieces.add(Rook(player, sq))
@@ -218,3 +216,18 @@ class Game(object):
                     nodes += self.perft_captures(depth - 1)
                     self.undo_move()
         return nodes
+
+    def divide(self, depth):
+        print self.board
+        if (depth == 1):
+            for move in self.current_player.moves(self.board):
+                if self.is_legal(move):
+                    self.make_move(move)
+                    print move
+                    self.undo_move()
+        else:
+            for move in self.current_player.moves(self.board):
+                if self.is_legal(move):
+                    self.make_move(move)
+                    print move, " ", self.perft(depth-1)
+                    self.undo_move()
