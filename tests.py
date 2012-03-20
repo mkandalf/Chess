@@ -45,14 +45,11 @@ class PerftTest(ChessTest):
         self.game.ply = 0
 
     def test_perft1(self):
-        self.assertEquals(8902, self.game.perft(2))
-
-    def test_perft3_captures(self):
-        self.assertEquals(0, self.game.perft_captures(1))
+        self.assertEquals(2039, self.game.perft(2))
 
     def test_divide(self):
         self.game.divide(2)
-        self.assertTrue()
+        self.assertTrue(True)
 
 
 class ParseMoveTest(unittest.TestCase):
