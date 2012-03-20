@@ -34,6 +34,22 @@ class GameTest(unittest.TestCase):
         self.assertEquals(got, expected)
 
 
+class PerftTest(ChessTest):
+    def setUp(self):
+        self.board = Board()
+        self.white = Player(Color.WHITE)
+        self.black = Player(Color.BLACK)
+        self.game = Game(self.board, (self.white, self.black))
+        self.game.from_fen(\
+                "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w KQkq - 0 1")
+
+    def test_perft1(self):
+        self.assertEquals(8902, self.game.perft(3))
+
+    def test_perft3_captures(self):
+        self.assertEquals(0, self.game.perft_captures(1))
+
+
 class ParseMoveTest(unittest.TestCase):
     def setUp(self):
         self.move_parser = MoveParser()

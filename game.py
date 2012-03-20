@@ -198,3 +198,28 @@ class Game(object):
         else:
             print "Stalemate"
         print "Game over."
+
+    def perft(self, depth):
+        nodes = 0
+        for move in self.current_player.moves(self.board):
+            if self.is_legal(move):
+                if (depth == 1):
+                    nodes += 1
+                else:
+                    self.make_move(move)
+                    nodes += self.perft(depth - 1)
+                    self.undo_move()
+        return nodes
+
+    def perft_captures(self, depth):
+        nodes = 0
+        for move in self.current_player.moves(self.board):
+            if self.is_legal(move):
+                if (depth == 1):
+                    if (move.captured):
+                        nodes += 1
+                else:
+                    self.make_move(move)
+                    nodes += self.perft_captures(depth - 1)
+                    self.undo_move()
+        return nodes
