@@ -127,11 +127,16 @@ class Game(object):
             return False
 
     @property
+    def cant_mate(self):
+        return len(self.board.pieces) == 2
+
+    @property
     def is_over(self):
         """Check if the game is over for the given player.
         The game is over if a player cannot make any moves."""
         return not any(self.is_legal(move)
-                for move in self.current_player.moves(self.board))
+                for move in self.current_player.moves(self.board)) \
+                or self.cant_mate
 
     def is_checkmate(self, player):
         """Check if the given player is checkmated.
