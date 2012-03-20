@@ -345,8 +345,8 @@ class IsOverTest(ChessTest):
         self.white.castling.append((False, False))
         king = King(self.white, (0, 0))
         rook1 = Rook(self.black, (8, 0))
-        self.board.pieces.add(king)
-        self.board.pieces.add(rook1)
+        king2 = King(self.black, (7, 0))
+        self.board.pieces = set([king, rook1, king2])
         self.assertFalse(self.game.is_over)
 
 
