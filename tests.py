@@ -305,12 +305,6 @@ class IsLegalTest(ChessTest):
         move = Move(king, (1, 1), (2, 2))
         self.assertTrue(self.game.is_legal(move))
 
-    def test_not_moves_not_check(self):
-        king = King(self.white, (1, 1))
-        self.board.pieces.add(king)
-        move = Move(king, (1, 1), (3, 3))
-        self.assertFalse(self.game.is_legal(move))
-
     def test_moves_is_check(self):
         king = King(self.white, (1, 1))
         knight = Knight(self.black, (0, 0))

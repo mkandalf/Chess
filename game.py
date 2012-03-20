@@ -103,23 +103,21 @@ class Game(object):
         * a piece can reach the target square
         * an allied piece is not on the target square
         * moving would not place the owner in check."""
-        if move.piece.can_reach(self.board, move.to):
-            piece = self.board.piece_at(move.to)
-            if piece is None or piece.owner != move.piece.owner:
-                # disallow castling through check
-                if type(move.piece) == King:
-                    dx = move.to[0] - move.start[0]
-                    if abs(dx) == 2:  # castle
-                        through = move.start[0] + dx / 2, move.to[1]
-                        if any(piece.can_attack(self.board, through)
-                                for piece in self.board.pieces
-                                if piece.owner != move.piece.owner):
-                            return False
+        piece = self.board.piece_at(move.to)
+        if piece is None or piece.owner != move.piece.owner:
+            # disallow castling through check
+            if type(move.piece) == King:
+                dx = move.to[0] - move.start[0]
+                if abs(dx) == 2:  # castle
+                    through = move.start[0] + dx / 2, move.to[1]
+                    if any((piece.can_attack(self.board, through) or 
+                            piece.can_attack(self.board, move.start))
+                            for piece in self.board.pieces
+                            if piece.owner != move.piece.owner):
+                        return False
 
-                with Position(self, move) as position:
-                    return not move.piece.owner.is_in_check(position)
-            else:
-                return False
+            with Position(self, move) as position:
+                return not move.piece.owner.is_in_check(position)
         else:
             return False
 

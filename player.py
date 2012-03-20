@@ -80,5 +80,7 @@ class Human(Player):
                     print "No piece found."
                 elif move.piece.owner != self:
                     print "You do not own that piece."
+                elif not move.piece.can_reach(move.to, board):
+                    print "Not a valid move."
                 else:
                     return move
