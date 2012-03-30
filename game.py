@@ -16,7 +16,7 @@ class Game(object):
         """The player whose turn it is."""
         return self.players[self.ply % 2]
 
-    def make_move(self, move):
+    def _make_move(self, move):
         """Apply the given move to the board."""
         #Handle castling
         if type(move.piece) == King:
@@ -63,7 +63,7 @@ class Game(object):
         self.moves.append(move)
         self.ply += 1
 
-    def undo_move(self):
+    def _undo_move(self):
         """Apply the move in reverse to the board."""
         # restore castling rights
         move = self.moves.pop()
@@ -179,7 +179,7 @@ class Game(object):
             move = self.current_player.get_move(self.board)
             print move
             if self.is_legal(move):
-                self.make_move(move)
+                self._make_move(move)
                 print self.board
             else:
                 print "Illegal move."
@@ -196,9 +196,9 @@ class Game(object):
                 if (depth == 1):
                     nodes += 1
                 else:
-                    self.make_move(move)
+                    self._make_move(move)
                     nodes += self.perft(depth - 1)
-                    self.undo_move()
+                    self._undo_move()
         return nodes
 
     def perft_captures(self, depth):
@@ -209,9 +209,9 @@ class Game(object):
                     if (move.captured):
                         nodes += 1
                 else:
-                    self.make_move(move)
+                    self._make_move(move)
                     nodes += self.perft_captures(depth - 1)
-                    self.undo_move()
+                    self._undo_move()
         return nodes
 
     def divide(self, depth):
@@ -219,12 +219,12 @@ class Game(object):
         if (depth == 1):
             for move in self.current_player.moves(self.board):
                 if self.is_legal(move):
-                    self.make_move(move)
+                    self._make_move(move)
                     print move
-                    self.undo_move()
+                    self._undo_move()
         else:
             for move in self.current_player.moves(self.board):
                 if self.is_legal(move):
-                    self.make_move(move)
+                    self._make_move(move)
                     print move, " ", self.perft(depth-1)
-                    self.undo_move()
+                    self._undo_move()

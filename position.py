@@ -6,8 +6,8 @@ class Position(object):
         self.move = move
 
     def __enter__(self):
-        self.game.make_move(self.move)
+        self.game._make_move(self.move)
         return self.game.board
 
     def __exit__(self, type, value, traceback):
-        self.game.undo_move()
+        self.game._undo_move()
