@@ -8,23 +8,19 @@ class Piece(object):
     """Abstract base class for pieces."""
     def __init__(self, owner, location):
         self.owner = owner
-        self.location = location
+        self._location = location
+
+    @property
+    def location(self):
+        return self._location
 
     @property
     def x(self):
-        return self.location[0]
-
-    @x.setter
-    def x(self, value):
-        self.location = (value, self.location[1])
+        return self._location[0]
 
     @property
     def y(self):
-        return self.location[1]
-
-    @y.setter
-    def y(self, value):
-        self.location = (self.location[0], value)
+        return self._location[1]
 
     def attackable(self, board):
         """Get all the squares this piece can attack."""

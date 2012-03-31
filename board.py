@@ -3,7 +3,8 @@ from color import Color
 
 class Board(object):
     def __init__(self, pieces=None):
-        self.pieces = pieces or set()
+        self._pieces = pieces or {}
+        assert type(self._pieces) == dict
 
     @property
     def width(self):
@@ -13,6 +14,10 @@ class Board(object):
     def height(self):
         return 8
 
+    @property
+    def pieces(self):
+        return set(self._pieces.values())
+
     def is_on_board(self, loc):
         """Check if a location is on the board."""
         x, y = loc
@@ -20,20 +25,29 @@ class Board(object):
 
     def piece_at(self, location):
         """Get the piece at a given location or None if no piece is found."""
-        for piece in self.pieces:
-            if piece.location == location:
-                return piece
-        return None
+        try:
+            return self._pieces[location]
+        except KeyError:
+            return None
 
-    def is_ally_at(self, location, player):
-        piece = self.piece_at(location)
-        if piece is None:
-            return False
-        else:
-            return (piece.owner == player)
+    def add_piece(self, piece):
+        """Add a piece to the board."""
+        assert self.piece_at(piece.location) is None
+        self._pieces[piece.location] = piece
+
+    def move_piece(self, piece, loc):
+        """Move a piece to the specified square."""
+        self.remove_piece(piece)
+        piece._location = loc
+        self.add_piece(piece)
+
+    def remove_piece(self, piece):
+        """Remove a piece from the board."""
+        assert self.piece_at(piece.location) == piece
+        del self._pieces[piece.location]
 
     def __eq__(self, other):
-        return self.pieces == other.pieces
+        return self._pieces == other._pieces
 
     def __ne__(self, other):
         return not (self == other)

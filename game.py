@@ -1,3 +1,4 @@
+from board import Board
 from piece import Pawn, Bishop, Knight, Rook, Queen, King
 from player import Player, Color
 from position import Position
@@ -24,12 +25,12 @@ class Game(object):
             if abs(dy) == 2:
                 if dy == 2:
                     rook = self.board.piece_at((7, move.to[1]))
-                    assert rook is not None, (move.piece, self.board.pieces)
-                    rook.location = (5, move.to[1])
+                    assert rook is not None, (move.piece, self.board._pieces)
+                    self.board.move_piece(rook, (5, move.to[1]))
                 else:
                     rook = self.board.piece_at((0, move.to[1]))
-                    assert rook is not None, (move.piece, self.board.pieces)
-                    rook.location = (3, move.to[1])
+                    assert rook is not None, (move.piece, self.board._pieces)
+                    self.board.move_piece(rook, (3, move.to[1]))
             move.piece.owner.castling.append((False, False))
         #Remove castling rights on rook moves
         elif type(move.piece) == Rook:
@@ -45,20 +46,20 @@ class Game(object):
         else:
             move.piece.owner.castling.append(move.piece.owner.castling[-1])
 
+        # handle en-passant
         if type(move.piece) == Pawn:
             pawn = move.piece
             pawn.just_moved = (pawn.y == pawn.start_rank)
 
         if move.captured is not None:
-            assert move.captured in self.board.pieces, move
-            self.board.pieces.remove(move.captured)
-        move.piece.location = move.to
+            self.board.remove_piece(move.captured)
+
+        self.board.move_piece(move.piece, move.to)
 
         if move.promotion is not None:
             promoted = move.promotion(move.piece.owner, move.piece.location)
-            assert move.piece in self.board.pieces
-            self.board.pieces.remove(move.piece)
-            self.board.pieces.add(promoted)
+            self.board.remove_piece(move.piece)
+            self.board.add_piece(promoted)
 
         self.moves.append(move)
         self.ply += 1
@@ -66,8 +67,8 @@ class Game(object):
     def _undo_move(self):
         """Apply the move in reverse to the board."""
         # restore castling rights
-        move = self.moves.pop()
         self.ply -= 1
+        move = self.moves.pop()
 
         move.piece.owner.castling.pop()
 
@@ -76,27 +77,25 @@ class Game(object):
             dy = move.to[0] - move.start[0]
             if dy == 2:
                 rook = self.board.piece_at((5, move.to[1]))
-                rook.location = (7, move.to[1])
+                self.board.move_piece(rook, (7, move.to[1]))
             elif dy == -2:
                 rook = self.board.piece_at((3, move.to[1]))
-                rook.location = (0, move.to[1])
-
-        # restore piece location
-        move.piece.location = move.start
-        # restore captured piece
-        if move.captured is not None:
-            self.board.pieces.add(move.captured)
+                self.board.move_piece(rook, (0, move.to[1]))
 
         # remove promoted piece
         # restore promoting pawn
         if move.promotion is not None:
             promoted = move.promotion(move.piece.owner, move.to)
-            assert any(piece == promoted for piece in self.board.pieces), (promoted, self.board.pieces)
-            for piece in self.board.pieces:
-                if piece == promoted:
-                    self.board.pieces.remove(piece)
-                    break
-            self.board.pieces.add(move.piece)
+            self.board.remove_piece(promoted)
+            self.board.add_piece(move.piece)
+
+        # restore piece location
+        self.board.move_piece(move.piece, move.start)
+
+        # restore captured piece
+        if move.captured is not None:
+            self.board.add_piece(move.captured)
+
     def is_legal(self, move):
         """Check if a move is legal.
         A move is legal if
@@ -142,7 +141,7 @@ class Game(object):
 
     def from_fen(self, fen):
         """Reset game to match given FEN string"""
-        self.board.pieces = set()
+        self.board = Board()
         components = fen.split(" ")
         rows = components[0].split("/")
         for row, row_str in enumerate(rows):
@@ -155,17 +154,17 @@ class Game(object):
                     player = self.players[entry.islower()]
                     entry = entry.lower()
                     if entry.lower() == "r":
-                        self.board.pieces.add(Rook(player, sq))
+                        self.board.add_piece(Rook(player, sq))
                     elif entry.lower() == "n":
-                        self.board.pieces.add(Knight(player, sq))
+                        self.board.add_piece(Knight(player, sq))
                     elif entry.lower() == "b":
-                        self.board.pieces.add(Bishop(player, sq))
+                        self.board.add_piece(Bishop(player, sq))
                     elif entry.lower() == "q":
-                        self.board.pieces.add(Queen(player, sq))
+                        self.board.add_piece(Queen(player, sq))
                     elif entry.lower() == "k":
-                        self.board.pieces.add(King(player, sq))
+                        self.board.add_piece(King(player, sq))
                     elif entry.lower() == "p":
-                        self.board.pieces.add(Pawn(player, sq))
+                        self.board.add_piece(Pawn(player, sq))
                     column += 1
         # self.ply = int(components[1] == "b") + int(components[5]) - 1
 
