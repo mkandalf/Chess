@@ -18,10 +18,16 @@ class Board(object):
     def pieces(self):
         return set(self._pieces.values())
 
+    LOCS = {}
     def is_on_board(self, loc):
         """Check if a location is on the board."""
-        x, y = loc
-        return 0 <= x < self.width and 0 <= y < self.height
+        try:
+            return self.LOCS[loc]
+        except KeyError:
+            x, y = loc
+            self.LOCS[loc] = result = 0 <= x < self.width and 0 <= y < self.height
+            return result
+
 
     def piece_at(self, location):
         """Get the piece at a given location or None if no piece is found."""
