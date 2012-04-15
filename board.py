@@ -19,6 +19,7 @@ class Board(object):
         return set(self._pieces.values())
 
     LOCS = {}
+
     def is_on_board(self, loc):
         """Check if a location is on the board."""
         try:
@@ -37,6 +38,7 @@ class Board(object):
         """Add a piece to the board."""
         assert self.piece_at(piece.location) is None
         self._pieces[piece.location] = piece
+        piece.owner.pieces.add(piece)
 
     def move_piece(self, piece, loc):
         """Move a piece to the specified square."""
@@ -47,6 +49,7 @@ class Board(object):
     def remove_piece(self, piece):
         """Remove a piece from the board."""
         assert self.piece_at(piece.location) == piece
+        piece.owner.pieces.remove(piece)
         del self._pieces[piece.location]
 
     def __eq__(self, other):

@@ -13,6 +13,7 @@ class Player(object):
         self.color = color
         self.castling = [(True, True)]
         self.opponent = None # must be set after init
+        self.pieces = set()
 
     @property
     def can_castle_queenside(self):
@@ -22,21 +23,15 @@ class Player(object):
     def can_castle_kingside(self):
         return self.castling[-1][1]
 
-    def pieces(self, board):
-        """Get all pieces owned by the player."""
-        for piece in board.pieces:
-            if piece.owner == self:
-                yield piece
-
     def king(self, board):
-        for piece in self.pieces(board):
+        for piece in self.pieces:
             if type(piece) == King:
                 return piece
         assert False, self.pieces(board)
     
     def moves(self, board):
         """Get all the moves a player can make."""
-        for piece in self.pieces(board):
+        for piece in self.pieces:
             for move in piece.moves(board):
                 yield move
 
