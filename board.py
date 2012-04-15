@@ -16,7 +16,7 @@ class Board(object):
 
     @property
     def pieces(self):
-        return set(self._pieces.values())
+        return self._pieces.values()
 
     LOCS = {}
 
