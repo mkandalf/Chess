@@ -109,10 +109,10 @@ class CPU(Player):
         for piece in board.pieces:
             if piece.owner == self:
                 score += self.RELATIVE_VALUE[type(piece)]
-                score += len(list(piece.moves(board)))
+                score += sum(1 for _ in piece.moves(board))
             else:
                 score -= self.RELATIVE_VALUE[type(piece)]
-                score -= len(list(piece.moves(board)))
+                score -= sum(1 for _ in piece.moves(board))
         return score
 
 
@@ -123,6 +123,7 @@ class Human(Player):
 
     def get_move(self, game):
         """Request a valid move from the player."""
+        return None
         board = game.board
         while True:
             try:

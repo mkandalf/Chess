@@ -25,10 +25,7 @@ class Board(object):
 
     def piece_at(self, location):
         """Get the piece at a given location or None if no piece is found."""
-        try:
-            return self._pieces[location]
-        except KeyError:
-            return None
+        return self._pieces.get(location, None)
 
     def add_piece(self, piece):
         """Add a piece to the board."""
