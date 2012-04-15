@@ -7,7 +7,8 @@ from piece import Pawn, Bishop, Knight, Rook, Queen, King
 from player import Human, CPU
 
 def main():
-    players = (CPU(Color.WHITE), CPU(Color.BLACK))
+    players = white, black = (CPU(Color.WHITE), Human(Color.BLACK))
+    white.opponent, black.opponent = black, white
     board = Board()
     for player in players:
         if player.color == Color.WHITE:

@@ -175,7 +175,7 @@ class Game(object):
         print self.board
         while not self.is_over:
             print "%s's turn." % self.current_player
-            move = self.current_player.get_move(self.board)
+            move = self.current_player.get_move(self)
             print move
             if self.is_legal(move):
                 self._make_move(move)
