@@ -45,8 +45,13 @@ class Piece(object):
         """Check if the given square is reachable."""
         return square in self.reachable(board)
 
+    def __hash__(self):
+        return hash((type(self), self.location, self.owner.color))
+
     def __eq__(self, other):
-        return self.owner == other.owner and self.location == other.location
+        return type(self) == type(other) and \
+               self.owner == other.owner and \
+               self.location == other.location
 
     def __ne__(self, other):
         return not self == other
@@ -60,11 +65,9 @@ class VectorPiece(Piece):
     _vectors = []
 
     def attackable(self, board):
-        for vector in self._vectors:
-            u, v = vector
-            x, y = self.x + u, self.y + v
-            while board.is_on_board((x, y)):
-                loc = (x, y)
+        for u, v in self._vectors:
+            loc = x, y = self.x + u, self.y + v
+            while board.is_on_board(loc):
                 piece = board.piece_at(loc)
                 if piece is None:
                     yield loc
@@ -72,8 +75,7 @@ class VectorPiece(Piece):
                     if piece.owner != self.owner:
                         yield loc
                     break
-                x += u
-                y += v
+                loc = x, y = x + u, y + v
 
 
 class Bishop(VectorPiece):
